@@ -188,7 +188,7 @@ pure $ polygon Stroke [ 300.0 /\ 200.0, 100.0 /\ 200.0, 0.0 /\ 30.0 ]
   # lineWidth 10.0
 ```
 
->Note:For functions that cannot be combined, such as `lineWidth`, the innermost one will be applied.
+>Note: For functions that cannot be combined, such as `lineWidth`, the innermost one will be applied.
 
 
 ```purescript
@@ -290,7 +290,7 @@ Create a sprite from an image path.
 - `FromPicture`
 Create a sprite from a Picture type.
 
->Note:If you include `sprite` in the picture specified by `FromPicture`, it will not work stably. Also, it is not possible to sprite a Picture that exceeds the size of the current campus.
+>Note: If you include `sprite` in the picture specified by `FromPicture`, it will not work stably. Also, it is not possible to sprite a Picture that exceeds the size of the current campus.
 
 ### GameState
 A game can have an internal state. The second argument of `GameSpecM` is the type of the internal state of the game.`initialGameState` can be used to specify the initial game state.
@@ -321,13 +321,18 @@ data Event
 ```
 
 - `KeyEvent`
+
 Keyboard and mouse button events. The `KeyCode` tells which key was pressed. The `String` of `KeyBoard String` stores the value that can be obtained with `KeyboardEvent.code` in JavaScript.
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
 `MouseButton` indicates which mouse button was pressed. Literally. `Left` is the left button, `RIght` is the right button, and `Center` is the wheel button.
 The `KeyState` stores whether the button is pressed (`KeyDown`) or released (`KeyUp`).
+
 - `Update`
+
 The `Update` event will be executed every frame. The `deltaTime` is the time elapsed since the last `Update` event.
+
 - `MouseMove`
+
 The `MouseMove` event is called when the mouse is moved. It stores the position in `mouseX` and `mouseY`.
 
 example: Each time `A` on the keyboard is pressed, the image is moved 10 pixels to the right.
