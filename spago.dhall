@@ -40,6 +40,6 @@ to generate this file without the comments in this block.
   ]
 , packages = ./packages.dhall
 , license = "MIT"
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 , repository = "https://github.com/yukikurage/purescript-glapple"
 }
