@@ -40,7 +40,7 @@ in  upstream
     }
 ...
 ```
-run
+and run
 `spago install glapple`
 
 ## Documentation
