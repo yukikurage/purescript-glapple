@@ -39,7 +39,7 @@ in  upstream
     , repo =
         "https://github.com/yukikurage/purescript-glapple"
     , version =
-        "v1.0.0"
+        "v1.0.1"
     }
 ...
 ```
