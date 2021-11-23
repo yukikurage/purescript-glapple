@@ -44,5 +44,6 @@ gameSpec = GameSpecM
 ```
 
 Bundle it into `index.js` using an appropriate tool. Then you get:
+
 ![image](https://user-images.githubusercontent.com/55534323/143014373-d16b75f0-4aa0-4741-82c5-736e6f41a4dd.png)
 
