@@ -48,5 +48,5 @@ and run
 `spago install glapple`
 
 ## Documentation
-In the [docs](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
-The API reference can be configured locally with `spago docs`.
+- In the [docs](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
+- The API reference can be configured locally with `spago docs`.
