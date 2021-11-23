@@ -323,8 +323,10 @@ data Event
 - `KeyEvent`
 
 Keyboard and mouse button events. The `KeyCode` tells which key was pressed. The `String` of `KeyBoard String` stores the value that can be obtained with `KeyboardEvent.code` in JavaScript.
-https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
-`MouseButton` indicates which mouse button was pressed. Literally. `Left` is the left button, `RIght` is the right button, and `Center` is the wheel button.
+
+>https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
+
+`MouseButton` indicates which mouse button was pressed. Literally, `Left` is the left button, `Right` is the right button, and `Center` is the wheel button.
 The `KeyState` stores whether the button is pressed (`KeyDown`) or released (`KeyUp`).
 
 - `Update`
