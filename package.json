@@ -1,0 +1,19 @@
+{
+  "name": "purescript-glapple",
+  "scripts": {
+    "clean": "rm -r output .lock .cache",
+    "test": "npx spago test",
+    "build:spago": "npx spago build",
+    "deploy:spago": "npx spago bundle-app --main Main --to './public/index.js'",
+    "watch:spago": "npx spago build --watch",
+    "watch:webpack-server": "npx webpack-dev-server",
+    "watch": "npm run watch:webpack-server",
+    "deploy": "npm run deploy:spago"
+  },
+  "author": "yukikurage",
+  "license": "MIT",
+  "devDependencies": {
+    "purescript": "^0.14.5",
+    "spago": "^0.20.3"
+  }
+}
