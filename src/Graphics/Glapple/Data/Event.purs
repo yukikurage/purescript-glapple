@@ -17,7 +17,6 @@ data KeyCode = Keyboard String | Mouse MouseButton
 derive instance Eq KeyCode
 derive instance Ord KeyCode
 
--- | deltaTimeは前回からの経過時間(s)
 data Event
   = KeyEvent { keyCode :: KeyCode, keyState :: KeyState }
   | Update { deltaTime :: Number }

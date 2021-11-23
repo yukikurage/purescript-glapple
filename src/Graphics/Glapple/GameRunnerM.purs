@@ -38,8 +38,6 @@ import Web.UIEvent.KeyboardEvent.EventTypes (keydown, keyup)
 import Web.UIEvent.MouseEvent as MouseEvent
 import Web.UIEvent.MouseEvent.EventTypes (mousedown, mousemove, mouseup)
 
--- ToDo: 共通している処理が多いのでどうにかする
-
 --------------------
 -- Run Child Game --
 --------------------
@@ -182,6 +180,7 @@ runGameWithM (GameId { inputEmitter, renderEmitter }) (GameSpecM { initGameState
   liftEffect $ write (Just time) localInitTimeRef
   pure unit
 
+-- | runGameWithM without outputHandler
 runGameWithM_
   :: forall s g i o childG childI childO
    . GameId s childI
@@ -400,7 +399,7 @@ runGameM
 
   pure $ gameId
 
--- | runGameのOutputHandlerなしバージョン
+-- | runGameM without outputHandler
 runGameM_
   :: forall s g i o
    . Ord s

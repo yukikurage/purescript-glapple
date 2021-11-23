@@ -66,6 +66,8 @@ instance Semigroup (Picture sprite) where
 instance Monoid (Picture sprite) where
   mempty = empty
 
+-- | Draw a picture
+-- | It is not recommended to use this except for the glapple system.
 drawPicture
   :: forall sprite
    . Context2D
@@ -81,7 +83,7 @@ saveAndRestore ctx f = do
   f
   liftEffect $ restore ctx
 
--- | 画像の読み込み
+-- | Aff version of tryLoadImage
 tryLoadImageAff :: String -> Aff CanvasImageSource
 tryLoadImageAff str = makeAff \thrower -> do
   tryLoadImage str $ case _ of
@@ -240,13 +242,15 @@ infixl 5 destinationOverComposite as <-.
 infixl 5 multiplyComposite as <-*
 infixl 5 addComposite as <-+
 
+-- | Translate a picture.
 translate :: forall s. Number -> Number -> Picture s -> Picture s
 translate x y = operate (\ctx -> C.translate ctx { translateX: x, translateY: y })
 
+-- | Scale a picture.
 scale :: forall s. Number -> Number -> Picture s -> Picture s
 scale sx sy = operate (\ctx -> C.scale ctx { scaleX: sx, scaleY: sy })
 
--- | Clockwise
+-- | Rotate a picture. (Clockwise)
 rotate :: forall s. Number -> Picture s -> Picture s
 rotate r = operate (flip C.rotate r)
 
@@ -257,12 +261,13 @@ transform trans = operate (flip C.transform trans)
 -- Magics --
 ------------
 
+-- | Retrieves the current transform state and draws a Picture.
 drawWithTransform :: forall s. (Transform -> Picture s) -> Picture s
 drawWithTransform f = Picture \ctx img -> do
   t <- liftEffect $ getTransform ctx
   drawPicture ctx img $ f t
 
--- | Deprecated.
+-- | It is not recommended to use this system except for the glapple system.
 absorb' :: forall s. (Context2D -> (s -> Maybe CanvasImageSource) -> Aff (Picture s)) -> Picture s
 absorb' affPic = Picture \ctx img -> do
   pic <- affPic ctx img
@@ -287,9 +292,11 @@ operate f p = Picture \ctx img -> saveAndRestore ctx do
   liftEffect $ f ctx
   drawPicture ctx img p
 
+-- | Empty picture.
 empty :: forall sprite. Picture sprite
 empty = Picture \_ _ -> pure unit
 
+-- | Draws the sprite loaded by runGame.
 sprite :: forall sprite. sprite -> Picture sprite
 sprite spr = Picture \ctx canvasImageSources -> liftEffect do
   case canvasImageSources spr of
@@ -303,24 +310,31 @@ paint drawStyle shape = Picture \ctx img -> saveAndRestore ctx do
   liftEffect $ setDrawStyle ctx img drawStyle
   drawPicture ctx img shape
 
+-- | Set opacity.
 opacity :: forall s. Number -> Picture s -> Picture s
 opacity o = operate (flip setGlobalAlpha o)
 
+-- | Set color
 color :: forall s. Color -> Picture s -> Picture s
 color c s = paint (MonoColor c) s
 
+-- | Set textAlign.
 textAlign :: forall s. TextAlign -> Picture s -> Picture s
 textAlign a = operate (flip setTextAlign a)
 
+-- | Set font.
 font :: forall s. Font -> Picture s -> Picture s
 font f = operate (flip setFont f)
 
+-- | Set textBaseLine.
 textBaseLine :: forall s. TextBaseline -> Picture s -> Picture s
 textBaseLine b = operate (flip setTextBaseline b)
 
+-- | Set lineWidth.
 lineWidth :: forall s. Number -> Picture s -> Picture s
 lineWidth w = operate $ flip setLineWidth w
 
+-- | Draw text.
 text
   :: forall sprite
    . Shape
@@ -336,6 +350,7 @@ text style str = Picture \ctx _ -> saveAndRestore ctx $ liftEffect $ do
       C.strokeText ctx str 0.0 0.0
   restore ctx
 
+-- | Draw polygon.
 polygon
   :: forall sprite
    . Shape
@@ -350,6 +365,7 @@ polygon style path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
     Nothing -> pure unit
   runShape ctx style
 
+-- | Draw line.
 line
   :: forall sprite
    . Array (Number /\ Number)
@@ -363,6 +379,7 @@ line path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
     Nothing -> pure unit
   runShape ctx $ Stroke
 
+-- | Draw rectangle.
 rect
   :: forall s
    . Shape
@@ -408,8 +425,10 @@ fan style { radius, start, angle } = Picture \ctx _ -> saveAndRestore ctx $ lift
 -- Transform Computation --
 ---------------------------
 
+-- | convert angle to Transform
 angleToTransform :: Number -> Transform
 angleToTransform x = { m11: cos x, m12: sin x, m21: -sin x, m22: cos x, m31: 0.0, m32: 0.0 }
 
+-- | convert parallel movement to Transform
 translateToTransform :: Number -> Number -> Transform
 translateToTransform x y ={ m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: x, m32: y }

@@ -13,7 +13,7 @@ import Graphics.Glapple.Data.Picture (Picture, absorb', empty)
 -- | Used for input from outside the game.
 data GameId s i =
   GameId
-    { inputEmitter :: EmitterId Effect i --Input EmitterはInputを取る必要がある
+    { inputEmitter :: EmitterId Effect i
     , renderEmitter ::
         EmitterId Aff
           { canvasImageSources :: s -> Maybe CanvasImageSource
@@ -21,7 +21,7 @@ data GameId s i =
           }
     }
 
--- | Pass the information to the game.
+-- | Tell input to the game.
 tell
   :: forall s i m
    . MonadEffect m
@@ -46,7 +46,7 @@ emptyGameId = do
   renderEmitter <- newEmitter
   pure $ GameId { inputEmitter, renderEmitter }
 
--- | GameIdが空のときTrueを返します
+-- | Returns True if GameId is empty.
 null :: forall s i m. MonadEffect m => GameId s i -> m Boolean
 null (GameId { inputEmitter, renderEmitter }) = do
   inputS <- emitterSize inputEmitter

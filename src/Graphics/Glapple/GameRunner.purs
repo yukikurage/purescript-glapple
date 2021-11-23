@@ -11,12 +11,14 @@ import Graphics.Glapple.Data.SpriteData (SpriteData)
 import Graphics.Glapple.GameRunnerM (runChildGameM_, runGameM_)
 import Graphics.Glapple.GlappleM (GlappleM)
 
+-- | A pure version of runChildGame.
 runChildGame
   :: forall s g i o childG childI
    . GameSpec s childG childI
   -> GlappleM s g i o (GameId s childI)
 runChildGame gameSpec = runChildGameM_ (mkGameSpecM gameSpec)
 
+-- | A pure version of runGame.
 runGame
   :: forall sprite gameState input
    . Ord sprite

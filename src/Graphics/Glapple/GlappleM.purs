@@ -51,6 +51,7 @@ runGlappleM (GlappleM state) f = runMaybeT $ runReaderT state f
 instance MonadEffect (GlappleM s g i o) where
   liftEffect e = GlappleM $ lift $ lift e
 
+-- | Get current game state.
 getGameState
   :: forall s g i o
    . GlappleM s g i o g
@@ -59,11 +60,13 @@ getGameState = do
   gameState <- liftEffect $ read gameStateRef
   GlappleM $ lift $ MaybeT $ pure gameState
 
+-- | Put game state
 putGameState :: forall s g i o. g -> GlappleM s g i o Unit
 putGameState x = do
   { gameStateRef } <- ask
   liftEffect $ write (Just x) gameStateRef
 
+-- | Modify function to game state
 modifyGameState
   :: forall s g i o
    . (g -> g)
@@ -72,6 +75,7 @@ modifyGameState f = do
   { gameStateRef } <- ask
   liftEffect $ modify_ (map f) gameStateRef
 
+-- | Get the time since the root game was started.
 getGlobalTime
   :: forall s g i o
    . GlappleM s g i o Number
@@ -86,6 +90,7 @@ getGlobalTime = do
     totalTime = map f initTimeMaybe
   GlappleM $ lift $ MaybeT $ pure totalTime
 
+-- | Get the time since the current game was started.
 getLocalTime
   :: forall s g i o
    . GlappleM s g i o Number
@@ -100,7 +105,7 @@ getLocalTime = do
     totalTime = map f initTimeMaybe
   GlappleM $ lift $ MaybeT $ pure totalTime
 
--- | Raise information to the parent game.
+-- | Raise output to the parent game.
 raise
   :: forall s g i o
    . o
