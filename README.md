@@ -2,16 +2,6 @@
 # purescript-glapple
 - [Installation](#installation)
 - [Documentation](#documentation)
-  - [Get Started](#get-started)
-  - [Picture Type](#picture-type)
-  - [Sprite System](#sprite-system)
-    - [SpriteData Type](#spritedata-type)
-  - [GameState](#gamestate)
-  - [EventHandler](#eventhandler)
-  - [`tell` and InputHandler](#tell-and-inputhandler)
-  - [`raise` and OutputHandler](#raise-and-outputhandler)
-  - [GlappleM Monad](#glapplem-monad)
-  - [Parent and child games](#parent-and-child-games)
 ## Installation
 in `packages.dhall`
 ```dhall
@@ -58,4 +48,4 @@ and run
 `spago install glapple`
 
 ## Documentation
-In the docs directory.
+In the [docs](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
