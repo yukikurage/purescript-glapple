@@ -58,8 +58,5 @@ and run
 
 ## Documentation
 - Docs in the [`docs`](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
-- API reference can be configured locally with command:
-```sh
-spago docs
-```
+- API reference is published on [Pursuit](https://pursuit.purescript.org/packages/purescript-glapple)
 - You can see an example that actually works in Repository [`glapple-examples`](https://github.com/yukikurage/glapple-examples).
