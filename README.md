@@ -1,3 +1,7 @@
+<div align="center">
+<img src="https://user-images.githubusercontent.com/55534323/143211862-76a070be-e8d5-44b5-817f-7fbc5f9a76a2.png" style="height:200px;width:200px;">
+</div>
+
 <!-- omit in toc -->
 # purescript-glapple
 ### A Canvas-based game creation library
@@ -7,7 +11,7 @@ This library can be used to control the division and render of the game state.
 ## TOC
 - [Installation with Spago](#installation-with-spago)
 - [Documentation](#documentation)
-## Installation with Spago
+## Installation with Spago!
 in `packages.dhall`
 ```dhall
 ...
