@@ -3,6 +3,8 @@
 ### A Canvas-based game creation library
 This library can be used to control the division and render of the game state.
 
+<!-- omit in toc -->
+## TOC
 - [Installation](#installation)
 - [Documentation](#documentation)
 ## Installation
@@ -51,5 +53,5 @@ and run
 `spago install glapple`
 
 ## Documentation
-- In the [docs](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
+- Docs in the [`docs`](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
 - The API reference can be configured locally with `spago docs`.
