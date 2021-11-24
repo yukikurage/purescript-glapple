@@ -1,5 +1,8 @@
 <!-- omit in toc -->
 # purescript-glapple
+### A Canvas-based game creation library
+This library can be used to control the division and render of the game state.
+
 - [Installation](#installation)
 - [Documentation](#documentation)
 ## Installation
