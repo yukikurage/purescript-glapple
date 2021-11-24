@@ -11,7 +11,7 @@ This library can be used to control the division and render of the game state.
 ## TOC
 - [Installation with Spago](#installation-with-spago)
 - [Documentation](#documentation)
-## Installation with Spago!
+## Installation with Spago
 in `packages.dhall`
 ```dhall
 ...
