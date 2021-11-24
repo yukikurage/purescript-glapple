@@ -1,5 +1,5 @@
-<div align="center">
-<img src="https://user-images.githubusercontent.com/55534323/143211862-76a070be-e8d5-44b5-817f-7fbc5f9a76a2.png" style="height:200px;width:200px;">
+<div>
+<img src="https://user-images.githubusercontent.com/55534323/143211862-76a070be-e8d5-44b5-817f-7fbc5f9a76a2.png" style="height:150px;width:150px;">
 </div>
 
 <!-- omit in toc -->
