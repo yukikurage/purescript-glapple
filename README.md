@@ -1,3 +1,7 @@
+<div>
+<img src="https://user-images.githubusercontent.com/55534323/143211862-76a070be-e8d5-44b5-817f-7fbc5f9a76a2.png" style="height:150px;width:150px;">
+</div>
+
 <!-- omit in toc -->
 # purescript-glapple
 ### A Canvas-based game creation library
@@ -54,4 +58,8 @@ and run
 
 ## Documentation
 - Docs in the [`docs`](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
-- The API reference can be configured locally with `spago docs`.
+- API reference can be configured locally with command:
+```sh
+spago docs
+```
+- You can see an example that actually works in Repository [`glapple-examples`](https://github.com/yukikurage/glapple-examples).
