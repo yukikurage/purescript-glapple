@@ -58,4 +58,4 @@ and run
 ```sh
 spago docs
 ```
-- You can see an example that actually works in Repository [glapple](https://github.com/yukikurage/glapple).
+- You can see an example that actually works in Repository [`glapple`](https://github.com/yukikurage/glapple).
