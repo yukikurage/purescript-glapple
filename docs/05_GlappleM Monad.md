@@ -30,7 +30,7 @@ gameSpec = GameSpecM
 Get current game state. If the game state does not exist before initialization, the process will stop there.
 
 - `putGameState :: forall s g i o. g -> GlappleM s g i o Unit`
-- 
+
 Put game state.
 
 - `modifyGameState :: forall s g i o. (g -> g) -> GlappleM s g i o Unit`
