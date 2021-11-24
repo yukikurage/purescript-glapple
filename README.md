@@ -54,4 +54,8 @@ and run
 
 ## Documentation
 - Docs in the [`docs`](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
-- The API reference can be configured locally with `spago docs`.
+- API reference can be configured locally with command:
+```sh
+spago docs
+```
+- You can see an example that actually works in Repository (glapple)[https://github.com/yukikurage/glapple].
