@@ -8,8 +8,8 @@ module Graphics.Glapple.Data.GameSpecM
 import Prelude
 
 import Graphics.Glapple.Data.Event (Event)
-import Graphics.Glapple.GlappleM (GlappleM)
 import Graphics.Glapple.Data.Picture (Picture, empty)
+import Graphics.Glapple.GlappleM (GlappleM)
 
 type CanvasSpec =
   { height :: Number
