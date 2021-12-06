@@ -27,6 +27,7 @@ import Graphics.Glapple.Data.Picture (Picture, drawPicture, empty, tryLoadImageA
 import Graphics.Glapple.Data.SpriteData (SpriteData(..))
 import Graphics.Glapple.GlappleM (GlappleM, InternalState, runGlappleM)
 import Unsafe.Coerce (unsafeCoerce)
+import Web.DOM.Element (clientHeight, clientWidth)
 import Web.Event.EventTarget (addEventListener, eventListener)
 import Web.HTML (HTMLCanvasElement, window)
 import Web.HTML.HTMLCanvasElement as HTMLCanvasElement
@@ -288,6 +289,7 @@ runGameM
 
   let
     htmlCanvasElement = unsafeCoerce canvasElement :: HTMLCanvasElement
+    element = HTMLCanvasElement.toElement htmlCanvasElement
     cTarget = HTMLCanvasElement.toEventTarget htmlCanvasElement
 
   mouseDownHandler <- eventListener \e -> case MouseEvent.fromEvent e of
@@ -326,8 +328,15 @@ runGameM
     Just mouseE -> do
       { left, top } <- getBoundingClientRect $ HTMLCanvasElement.toHTMLElement htmlCanvasElement
       let
-        mouseX = toNumber (MouseEvent.clientX mouseE) - left
-        mouseY = toNumber (MouseEvent.clientY mouseE) - top
+        mouseX' = toNumber (MouseEvent.clientX mouseE) - left
+        mouseY' = toNumber (MouseEvent.clientY mouseE) - top
+      h <- clientHeight element
+      w <- clientWidth element
+      let
+        scaleH = h / height
+        scaleW = w / width
+        mouseX = mouseX' / scaleW
+        mouseY = mouseY' / scaleH
       fire eventEmitter (MouseMove { mouseX, mouseY })
       write (Just { mouseX, mouseY }) mousePositionRef
     _ -> pure unit

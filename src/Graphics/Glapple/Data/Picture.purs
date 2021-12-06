@@ -1,46 +1,48 @@
 module Graphics.Glapple.Data.Picture
-  ( Picture
+  ( (<-*)
+  , (<-+)
+  , (<-.)
+  , (<-^)
+  , (|*|)
   , DrawStyle(..)
-  , Shape(..)
+  , Font(..)
+  , FontFamily(..)
   , FontStyle(..)
   , FontWeight(..)
-  , FontFamily(..)
-  , Font(..)
-  , drawPicture
-  , tryLoadImageAff
-  , transform
-  , absorb'
-  , empty
-  , rotate
+  , Picture
+  , Shape(..)
   , absolute
-  , arc
+  , absorb
+  , absorb'
   , addComposite
+  , angleToTransform
+  , arc
   , color
   , destinationOverComposite
+  , drawPicture
   , drawWithTransform
+  , empty
   , fan
   , font
   , line
   , lineWidth
   , multiplyComposite
+  , multiplyTransform
   , opacity
+  , paint
   , polygon
   , rect
+  , rotate
   , scale
   , sourceOverComposite
   , sprite
   , text
   , textAlign
   , textBaseLine
+  , transform
   , translate
-  , paint
-  , absorb
-  , (<-*)
-  , (<-+)
-  , (<-.)
-  , (<-^)
   , translateToTransform
-  , angleToTransform
+  , tryLoadImageAff
   ) where
 
 import Prelude
@@ -54,11 +56,44 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Aff (Aff, error, makeAff)
 import Effect.Class (class MonadEffect, liftEffect)
-import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke, tryLoadImage)
+import Graphics.Canvas
+  ( CanvasGradient
+  , CanvasImageSource
+  , CanvasPattern
+  , Composite(..)
+  , Context2D
+  , PatternRepeat
+  , TextAlign
+  , TextBaseline
+  , Transform
+  , addColorStop
+  , beginPath
+  , closePath
+  , createLinearGradient
+  , createPattern
+  , createRadialGradient
+  , drawImage
+  , fill
+  , lineTo
+  , moveTo
+  , restore
+  , save
+  , setGlobalAlpha
+  , setGlobalCompositeOperation
+  , setGradientFillStyle
+  , setLineWidth
+  , setPatternFillStyle
+  , setTextAlign
+  , setTextBaseline
+  , setTransform
+  , stroke
+  , tryLoadImage
+  )
 import Graphics.Canvas as C
 import Math (cos, floor, pi, sin)
 
-newtype Picture sprite = Picture (Context2D -> (sprite -> Maybe CanvasImageSource) -> Aff Unit)
+newtype Picture sprite = Picture
+  (Context2D -> (sprite -> Maybe CanvasImageSource) -> Aff Unit)
 
 instance Semigroup (Picture sprite) where
   append = composite SourceOver
@@ -127,11 +162,20 @@ runShape ctx = case _ of
     stroke ctx
     beginPath ctx
 
-foreign import setGradientStrokeStyle :: Context2D -> CanvasGradient -> Effect Unit
-foreign import setPatternStrokeStyle :: Context2D -> CanvasPattern -> Effect Unit
+foreign import setGradientStrokeStyle
+  :: Context2D -> CanvasGradient -> Effect Unit
+
+foreign import setPatternStrokeStyle
+  :: Context2D -> CanvasPattern -> Effect Unit
+
 foreign import getTransform :: Context2D -> Effect Transform
 
-setDrawStyle :: forall s. Context2D -> (s -> Maybe CanvasImageSource) -> DrawStyle s -> Effect Unit
+setDrawStyle
+  :: forall s
+   . Context2D
+  -> (s -> Maybe CanvasImageSource)
+  -> DrawStyle s
+  -> Effect Unit
 setDrawStyle ctx canvasImageSources = case _ of
   LinearGradient { x0, y0, x1, y1, colorStops } -> do
     gradient <- createLinearGradient ctx { x0, y0, x1, y1 }
@@ -200,16 +244,17 @@ derive instance Eq Font
 derive instance Ord Font
 
 setFont :: Context2D -> Font -> Effect Unit
-setFont ctx (Font { fontStyle, fontWeight, fontSize, fontHeight, fontFamily }) = do
-  C.setFont ctx $ show fontStyle
-    <> " "
-    <> show fontWeight
-    <> " "
-    <> show fontSize
-    <> "px/"
-    <> show fontHeight
-    <> "px "
-    <> show fontFamily
+setFont ctx (Font { fontStyle, fontWeight, fontSize, fontHeight, fontFamily }) =
+  do
+    C.setFont ctx $ show fontStyle
+      <> " "
+      <> show fontWeight
+      <> " "
+      <> show fontSize
+      <> "px/"
+      <> show fontHeight
+      <> "px "
+      <> show fontFamily
 
 ------------------------
 -- Picture Operations --
@@ -218,7 +263,12 @@ setFont ctx (Font { fontStyle, fontWeight, fontSize, fontHeight, fontFamily }) =
 -- | Combine images using the specified combining method.
 -- | Issue: Synthesis of the combined image behaves unexpectedly.
 -- | ex) x <-+ (y <-^ z) = (x <-+ y) <-^ z
-composite :: forall sprite. Composite -> Picture sprite -> Picture sprite -> Picture sprite
+composite
+  :: forall sprite
+   . Composite
+  -> Picture sprite
+  -> Picture sprite
+  -> Picture sprite
 composite comp pic1 pic2 =
   Picture \ctx canvasImageSources -> do
     drawPicture ctx canvasImageSources pic1
@@ -244,7 +294,8 @@ infixl 5 addComposite as <-+
 
 -- | Translate a picture.
 translate :: forall s. Number -> Number -> Picture s -> Picture s
-translate x y = operate (\ctx -> C.translate ctx { translateX: x, translateY: y })
+translate x y = operate
+  (\ctx -> C.translate ctx { translateX: x, translateY: y })
 
 -- | Scale a picture.
 scale :: forall s. Number -> Number -> Picture s -> Picture s
@@ -268,7 +319,10 @@ drawWithTransform f = Picture \ctx img -> do
   drawPicture ctx img $ f t
 
 -- | It is not recommended to use this system except for the glapple system.
-absorb' :: forall s. (Context2D -> (s -> Maybe CanvasImageSource) -> Aff (Picture s)) -> Picture s
+absorb'
+  :: forall s
+   . (Context2D -> (s -> Maybe CanvasImageSource) -> Aff (Picture s))
+  -> Picture s
 absorb' affPic = Picture \ctx img -> do
   pic <- affPic ctx img
   drawPicture ctx img pic
@@ -281,7 +335,10 @@ absorb affPic = Picture \ctx img -> do
 
 -- | Disables the parent's transform, forcing it to draw from the origin. Heavy use is deprecated.
 absolute :: forall s. Picture s -> Picture s
-absolute = operate (flip setTransform { m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: 0.0, m32: 0.0 })
+absolute = operate
+  ( flip setTransform
+      { m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: 0.0, m32: 0.0 }
+  )
 
 ------------
 -- Shapes --
@@ -375,7 +432,6 @@ line path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
     Just { head: (hx /\ hy), tail } -> do
       moveTo ctx hx hy
       for_ tail \(x /\ y) -> lineTo ctx x y
-      closePath ctx
     Nothing -> pure unit
   runShape ctx $ Stroke
 
@@ -393,14 +449,19 @@ rect style height width = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
 -- | Draw an arc with stroke.
 -- | Property angle is the rotation angle from the start position.
 -- | A positive number will cause a clockwise rotation, 2π will make a perfect circle, and 4π will return to a blank state.
-arc :: forall s. { start :: Number, angle :: Number, radius :: Number } -> Picture s
-arc { start, angle, radius } = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
-  let
-    { start: start', end } = convertArcFormat { start, angle }
-  C.arc ctx { x: 0.0, y: 0.0, start: start', end, radius }
-  runShape ctx $ Stroke
+arc
+  :: forall s
+   . { start :: Number, angle :: Number, radius :: Number }
+  -> Picture s
+arc { start, angle, radius } = Picture \ctx _ -> saveAndRestore ctx $ liftEffect
+  do
+    let
+      { start: start', end } = convertArcFormat { start, angle }
+    C.arc ctx { x: 0.0, y: 0.0, start: start', end, radius }
+    runShape ctx $ Stroke
 
-convertArcFormat :: { start :: Number, angle :: Number } -> { start :: Number, end :: Number }
+convertArcFormat
+  :: { start :: Number, angle :: Number } -> { start :: Number, end :: Number }
 convertArcFormat { start, angle } = { start: startRes, end: endRes }
   where
   start' = start - floor (start / (2.0 * pi)) * 2.0 * pi
@@ -412,14 +473,19 @@ convertArcFormat { start, angle } = { start: startRes, end: endRes }
 -- | Draw a fan.
 -- | Property angle is the rotation angle from the start position.
 -- | A positive number will cause a clockwise rotation, 2π will make a perfect circle, and 4π will return to a blank state.
-fan :: forall s. Shape -> { start :: Number, angle :: Number, radius :: Number } -> Picture s
-fan style { radius, start, angle } = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
-  let
-    { start: start', end } = convertArcFormat { start, angle }
-  moveTo ctx 0.0 0.0
-  C.arc ctx { x: 0.0, y: 0.0, start: start', end, radius }
-  closePath ctx
-  runShape ctx style
+fan
+  :: forall s
+   . Shape
+  -> { start :: Number, angle :: Number, radius :: Number }
+  -> Picture s
+fan style { radius, start, angle } = Picture \ctx _ -> saveAndRestore ctx $
+  liftEffect do
+    let
+      { start: start', end } = convertArcFormat { start, angle }
+    moveTo ctx 0.0 0.0
+    C.arc ctx { x: 0.0, y: 0.0, start: start', end, radius }
+    closePath ctx
+    runShape ctx style
 
 ---------------------------
 -- Transform Computation --
@@ -427,8 +493,15 @@ fan style { radius, start, angle } = Picture \ctx _ -> saveAndRestore ctx $ lift
 
 -- | convert angle to Transform
 angleToTransform :: Number -> Transform
-angleToTransform x = { m11: cos x, m12: sin x, m21: -sin x, m22: cos x, m31: 0.0, m32: 0.0 }
+angleToTransform x =
+  { m11: cos x, m12: sin x, m21: -sin x, m22: cos x, m31: 0.0, m32: 0.0 }
 
 -- | convert parallel movement to Transform
 translateToTransform :: Number -> Number -> Transform
-translateToTransform x y ={ m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: x, m32: y }
+translateToTransform x y =
+  { m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: x, m32: y }
+
+foreign import multiplyTransform
+  :: Transform -> Transform -> Transform
+
+infixr 7 multiplyTransform as |*|
