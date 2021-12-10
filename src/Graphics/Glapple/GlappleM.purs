@@ -16,7 +16,10 @@ import Effect.Now (nowTime)
 import Effect.Ref (Ref, modify_, read, write)
 import Graphics.Glapple.Data.Emitter (EmitterId, fire)
 import Graphics.Glapple.Data.Event (Event, KeyCode)
-import Graphics.Glapple.Data.InternalRegistrationIds (InternalRegistrationIds, unregisterGame)
+import Graphics.Glapple.Data.InternalRegistrationIds
+  ( InternalRegistrationIds
+  , unregisterGame
+  )
 
 type InternalState (s :: Type) g (i :: Type) o =
   { eventEmitter :: EmitterId Effect Event
@@ -24,7 +27,8 @@ type InternalState (s :: Type) g (i :: Type) o =
   , initTimeRef :: Ref (Maybe Time) --ルートゲーム開始時の時刻
   , localInitTimeRef :: Ref (Maybe Time) --ゲームがrunされた時刻
   , gameStateRef :: Ref (Maybe g) --ゲームの状態を保存(ゲーム開始前はNothing)
-  , internalRegistrationIdsRef :: Ref (Maybe (InternalRegistrationIds s i o)) --ゲームのregistrationIdを保存
+  , internalRegistrationIdsRef ::
+      Ref (Maybe (InternalRegistrationIds s i o)) --ゲームのregistrationIdを保存
   , keyStateRef :: Ref (Set KeyCode) --現在押されているキーのSet
   , mousePositionRef :: Ref (Maybe { mouseX :: Number, mouseY :: Number })
   }
@@ -122,7 +126,8 @@ destroy = do
   case internalRegistrationIdsMaybe of
     Just x -> do
       unregisterGame x
-    Nothing -> log "Glapple Warning: 初期化前に destroy が呼ばれたので，ゲームを破棄できませんでした．意図していない挙動であるかもしれません．"
+    Nothing -> log
+      "Glapple Warning: 初期化前に destroy が呼ばれたので，ゲームを破棄できませんでした．意図していない挙動であるかもしれません．"
   GlappleM $ lift $ MaybeT $ pure Nothing
 
 -- | Gets the current key press state.
@@ -134,7 +139,9 @@ getKeyState code = do
 
 -- | Gets the current mouse position.
 -- | Returns Nothing if the mouse position cannot be obtained because the user has not moved the mouse yet.
-getMousePosition :: forall s g i o. GlappleM s g i o (Maybe { mouseX :: Number, mouseY :: Number })
+getMousePosition
+  :: forall s g i o
+   . GlappleM s g i o (Maybe { mouseX :: Number, mouseY :: Number })
 getMousePosition = do
   { mousePositionRef } <- ask
   mousePosition <- liftEffect $ read mousePositionRef
@@ -145,7 +152,10 @@ break :: forall s g i o a. GlappleM s g i o a
 break = GlappleM $ lift $ MaybeT $ pure Nothing
 
 -- | Express the process of GlappleM by Effect.
-toEffect :: forall s g i o a x. (x -> GlappleM s g i o a) -> GlappleM s g i o (x -> Effect (Maybe a))
+toEffect
+  :: forall s g i o a x
+   . (x -> GlappleM s g i o a)
+  -> GlappleM s g i o (x -> Effect (Maybe a))
 toEffect glappleM = do
   internalState <- ask
   pure $ \x -> runGlappleM (glappleM x) internalState

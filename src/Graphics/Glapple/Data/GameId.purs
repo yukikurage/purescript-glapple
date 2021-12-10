@@ -35,9 +35,10 @@ renderGame
   :: forall s i
    . GameId s i
   -> Picture s
-renderGame (GameId { renderEmitter }) = absorb' \context2D canvasImageSources -> do
-  fire renderEmitter { context2D, canvasImageSources }
-  pure empty
+renderGame (GameId { renderEmitter }) = absorb' \context2D canvasImageSources ->
+  do
+    fire renderEmitter { context2D, canvasImageSources }
+    pure empty
 
 -- | Empty GameId.
 emptyGameId :: forall m s i. Bind m => MonadEffect m => m (GameId s i)

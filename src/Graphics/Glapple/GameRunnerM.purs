@@ -1,4 +1,12 @@
-module Graphics.Glapple.GameRunnerM (runChildGameM, runChildGameM_, runGameM, runGameM_, runGameWithM, runGameWithM_, createCanvasElement) where
+module Graphics.Glapple.GameRunnerM
+  ( runChildGameM
+  , runChildGameM_
+  , runGameM
+  , runGameM_
+  , runGameWithM
+  , runGameWithM_
+  , createCanvasElement
+  ) where
 
 import Prelude
 
@@ -18,12 +26,32 @@ import Effect.Class (liftEffect)
 import Effect.Class.Console (log)
 import Effect.Now (nowTime)
 import Effect.Ref (modify_, new, read, write)
-import Graphics.Canvas (CanvasElement, CanvasImageSource, Context2D, canvasElementToImageSource, clearRect, drawImage, getContext2D, setCanvasHeight, setCanvasWidth)
+import Graphics.Canvas
+  ( CanvasElement
+  , CanvasImageSource
+  , Context2D
+  , canvasElementToImageSource
+  , clearRect
+  , drawImage
+  , getContext2D
+  , setCanvasHeight
+  , setCanvasWidth
+  )
 import Graphics.Glapple.Data.Emitter (fire, newEmitter, register)
-import Graphics.Glapple.Data.Event (Event(..), KeyCode(..), KeyState(..), MouseButton(..))
+import Graphics.Glapple.Data.Event
+  ( Event(..)
+  , KeyCode(..)
+  , KeyState(..)
+  , MouseButton(..)
+  )
 import Graphics.Glapple.Data.GameId (GameId(..))
 import Graphics.Glapple.Data.GameSpecM (CanvasSpec, GameSpecM(..))
-import Graphics.Glapple.Data.Picture (Picture, drawPicture, empty, tryLoadImageAff)
+import Graphics.Glapple.Data.Picture
+  ( Picture
+  , drawPicture
+  , empty
+  , tryLoadImageAff
+  )
 import Graphics.Glapple.Data.SpriteData (SpriteData(..))
 import Graphics.Glapple.GlappleM (GlappleM, InternalState, runGlappleM)
 import Unsafe.Coerce (unsafeCoerce)
@@ -49,10 +77,15 @@ makeRenderHandler
   :: forall s g i o
    . InternalState s g i o
   -> GlappleM s g i o (Picture s)
-  -> ({ context2D :: Context2D, canvasImageSources :: s -> Maybe CanvasImageSource } -> Aff Unit)
-makeRenderHandler internalState render = \{ context2D, canvasImageSources } -> do --ここ以下がレンダリング毎に実行される
-  pic <- liftEffect $ map (fromMaybe empty) $ runGlappleM render internalState
-  drawPicture context2D canvasImageSources pic
+  -> ( { context2D :: Context2D
+       , canvasImageSources :: s -> Maybe CanvasImageSource
+       }
+       -> Aff Unit
+     )
+makeRenderHandler internalState render = \{ context2D, canvasImageSources } ->
+  do --ここ以下がレンダリング毎に実行される
+    pic <- liftEffect $ map (fromMaybe empty) $ runGlappleM render internalState
+    drawPicture context2D canvasImageSources pic
 
 makeHandlerEffect
   :: forall s g i o a
@@ -68,8 +101,11 @@ runChildGameM
    . GameSpecM s childG childI childO
   -> (childO -> GlappleM s g i o Unit)
   -> GlappleM s g i o (GameId s childI)
-runChildGameM (GameSpecM { initGameState, render, eventHandler, inputHandler }) outputHandler = do
-  internalState@{ eventEmitter, initTimeRef, keyStateRef, mousePositionRef } <- ask
+runChildGameM
+  (GameSpecM { initGameState, render, eventHandler, inputHandler })
+  outputHandler = do
+  internalState@{ eventEmitter, initTimeRef, keyStateRef, mousePositionRef } <-
+    ask
   gameStateRef <- liftEffect $ new Nothing
   internalRegistrationIdsRef <- liftEffect $ new Nothing
   localInitTimeRef <- liftEffect $ new Nothing
@@ -111,7 +147,8 @@ runChildGameM (GameSpecM { initGameState, render, eventHandler, inputHandler }) 
     gameState <- initGameState
     liftEffect $ write (Just gameState) gameStateRef
 
-  when (res == Nothing) $ log "Glapple Warning: Game initialization failed, possibly due to the use of functions such as getState in initGameState."
+  when (res == Nothing) $ log
+    "Glapple Warning: Game initialization failed, possibly due to the use of functions such as getState in initGameState."
 
   time <- liftEffect nowTime
   liftEffect $ write (Just time) localInitTimeRef
@@ -135,8 +172,12 @@ runGameWithM
   -> GameSpecM s childG childI childO
   -> (childO -> GlappleM s g i o Unit)
   -> GlappleM s g i o Unit
-runGameWithM (GameId { inputEmitter, renderEmitter }) (GameSpecM { initGameState, render, eventHandler, inputHandler }) outputHandler = do
-  internalState@{ eventEmitter, initTimeRef, keyStateRef, mousePositionRef } <- ask
+runGameWithM
+  (GameId { inputEmitter, renderEmitter })
+  (GameSpecM { initGameState, render, eventHandler, inputHandler })
+  outputHandler = do
+  internalState@{ eventEmitter, initTimeRef, keyStateRef, mousePositionRef } <-
+    ask
   gameStateRef <- liftEffect $ new Nothing
   internalRegistrationIdsRef <- liftEffect $ new Nothing
   localInitTimeRef <- liftEffect $ new Nothing
@@ -175,7 +216,8 @@ runGameWithM (GameId { inputEmitter, renderEmitter }) (GameSpecM { initGameState
     gameState <- initGameState
     liftEffect $ write (Just gameState) gameStateRef
 
-  when (res == Nothing) $ log "Glapple Warning: Game initialization failed, possibly due to the use of functions such as getState in initGameState."
+  when (res == Nothing) $ log
+    "Glapple Warning: Game initialization failed, possibly due to the use of functions such as getState in initGameState."
 
   time <- liftEffect nowTime
   liftEffect $ write (Just time) localInitTimeRef
@@ -193,7 +235,8 @@ runGameWithM_ gameId gameSpecM = runGameWithM gameId gameSpecM \_ -> pure unit
 -- Run Game --
 -- -----------
 
-loadImages :: forall s. Ord s => Array (s /\ String) -> Aff (Map s CanvasImageSource)
+loadImages
+  :: forall s. Ord s => Array (s /\ String) -> Aff (Map s CanvasImageSource)
 loadImages sprites = do
   tmp <- map fromFoldable
     $ for sprites (\(sprite /\ src) -> (sprite /\ _) <$> tryLoadImageAff src)
@@ -275,14 +318,16 @@ runGameM
   -- Web EventでEmitterを発火させる
   keyDownHandler <- eventListener \e -> case KeyboardEvent.fromEvent e of
     Just keyE | not (repeat keyE) -> do
-      fire eventEmitter (KeyEvent { keyCode: Keyboard $ code keyE, keyState: KeyDown })
+      fire eventEmitter
+        (KeyEvent { keyCode: Keyboard $ code keyE, keyState: KeyDown })
       modify_ (insert $ Keyboard $ code keyE) keyStateRef
     _ -> pure unit
   addEventListener keydown keyDownHandler false $ w
 
   keyUpHandler <- eventListener \e -> case KeyboardEvent.fromEvent e of
     Just keyE | not (repeat keyE) -> do
-      fire eventEmitter (KeyEvent { keyCode: Keyboard $ code keyE, keyState: KeyUp })
+      fire eventEmitter
+        (KeyEvent { keyCode: Keyboard $ code keyE, keyState: KeyUp })
       modify_ (delete $ Keyboard $ code keyE) keyStateRef
     _ -> pure unit
   addEventListener keyup keyUpHandler false $ w
@@ -290,7 +335,6 @@ runGameM
   let
     htmlCanvasElement = unsafeCoerce canvasElement :: HTMLCanvasElement
     element = HTMLCanvasElement.toElement htmlCanvasElement
-    cTarget = HTMLCanvasElement.toEventTarget htmlCanvasElement
 
   mouseDownHandler <- eventListener \e -> case MouseEvent.fromEvent e of
     Just mouseE -> do
@@ -306,7 +350,7 @@ runGameM
           modify_ (insert $ Mouse $ b) keyStateRef
         Nothing -> pure unit
     _ -> pure unit
-  addEventListener mousedown mouseDownHandler false cTarget
+  addEventListener mousedown mouseDownHandler false w
 
   mouseUpHandler <- eventListener \e -> case MouseEvent.fromEvent e of
     Just mouseE -> do
@@ -322,11 +366,12 @@ runGameM
           modify_ (delete $ Mouse b) keyStateRef
         Nothing -> pure unit
     _ -> pure unit
-  addEventListener mouseup mouseUpHandler false cTarget
+  addEventListener mouseup mouseUpHandler false w
 
   mouseMoveHandler <- eventListener \e -> case MouseEvent.fromEvent e of
     Just mouseE -> do
-      { left, top } <- getBoundingClientRect $ HTMLCanvasElement.toHTMLElement htmlCanvasElement
+      { left, top } <- getBoundingClientRect $ HTMLCanvasElement.toHTMLElement
+        htmlCanvasElement
       let
         mouseX' = toNumber (MouseEvent.clientX mouseE) - left
         mouseY' = toNumber (MouseEvent.clientY mouseE) - top
@@ -347,7 +392,8 @@ runGameM
     gameState <- initGameState
     liftEffect $ write (Just gameState) gameStateRef
 
-  when (res == Nothing) $ log "Glapple Warning: Game initialization failed, possibly due to the use of functions such as getState in initGameState."
+  when (res == Nothing) $ log
+    "Glapple Warning: Game initialization failed, possibly due to the use of functions such as getState in initGameState."
 
   launchAff_ do
     -- スプライトの読み込み
@@ -391,7 +437,9 @@ runGameM
 
       fire renderEmitter { canvasImageSources, context2D: offContext2D }
       liftEffect $ clearRect context2D { x: 0.0, y: 0.0, height, width }
-      liftEffect $ drawImage context2D (canvasElementToImageSource offCanvas) 0.0 0.0
+      liftEffect $ drawImage context2D (canvasElementToImageSource offCanvas)
+        0.0
+        0.0
 
       liftEffect do
         nowT <- nowTime

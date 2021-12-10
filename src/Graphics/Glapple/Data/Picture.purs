@@ -27,6 +27,7 @@ module Graphics.Glapple.Data.Picture
   , line
   , lineWidth
   , multiplyComposite
+  , composite
   , multiplyTransform
   , opacity
   , paint
@@ -442,7 +443,7 @@ rect
   -> Number
   -> Number
   -> Picture s
-rect style height width = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
+rect style width height = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
   C.rect ctx { x: 0.0, y: 0.0, height, width }
   runShape ctx style
 
