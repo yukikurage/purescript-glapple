@@ -3,16 +3,27 @@
 </div>
 
 <!-- omit in toc -->
+
 # purescript-glapple
+
 ### A Canvas-based game creation library
+
 This library can be used to control the division and render of the game state.
 
 <!-- omit in toc -->
+
 ## TOC
-- [Installation with Spago](#installation-with-spago)
-- [Documentation](#documentation)
+
+- [purescript-glapple](#purescript-glapple)
+    - [A Canvas-based game creation library](#a-canvas-based-game-creation-library)
+  - [TOC](#toc)
+  - [Installation with Spago](#installation-with-spago)
+  - [Documentation](#documentation)
+
 ## Installation with Spago
+
 in `packages.dhall`
+
 ```dhall
 ...
 let upstream = ...
@@ -48,15 +59,17 @@ in  upstream
     , repo =
         "https://github.com/yukikurage/purescript-glapple"
     , version =
-        "v1.0.2"
+        "v1.1.0"
     }
 ...
 ```
+
 and run
 
 `spago install glapple`
 
 ## Documentation
+
 - Docs in the [`docs`](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
 - API reference is published on [Pursuit](https://pursuit.purescript.org/packages/purescript-glapple)
 - You can see an example that actually works in Repository [`glapple-examples`](https://github.com/yukikurage/glapple-examples).
