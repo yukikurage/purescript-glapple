@@ -220,7 +220,7 @@ instance Show FontWeight where
     Bold -> "bold"
     FontWeight i -> show i
 
-data FontFamily = Serif | SansSerif | Cursive | Fantasy | Monospace
+data FontFamily = Serif | SansSerif | Cursive | Fantasy | Monospace | Manual String
 
 derive instance Eq FontFamily
 derive instance Ord FontFamily
@@ -232,6 +232,7 @@ instance Show FontFamily where
     Cursive -> "cursive"
     Fantasy -> "fantasy"
     Monospace -> "monospace"
+    Manual str -> "\'" <> str <> "\'"
 
 newtype Font = Font
   { fontStyle :: FontStyle
