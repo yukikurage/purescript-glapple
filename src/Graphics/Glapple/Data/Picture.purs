@@ -43,7 +43,7 @@ module Graphics.Glapple.Data.Picture
   , transform
   , translate
   , translateToTransform
-  , tryLoadImageAff
+  , tryLoadImageEffect
   ) where
 
 import Prelude
@@ -57,44 +57,12 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Aff (Aff, error, makeAff)
 import Effect.Class (class MonadEffect, liftEffect)
-import Graphics.Canvas
-  ( CanvasGradient
-  , CanvasImageSource
-  , CanvasPattern
-  , Composite(..)
-  , Context2D
-  , PatternRepeat
-  , TextAlign
-  , TextBaseline
-  , Transform
-  , addColorStop
-  , beginPath
-  , closePath
-  , createLinearGradient
-  , createPattern
-  , createRadialGradient
-  , drawImage
-  , fill
-  , lineTo
-  , moveTo
-  , restore
-  , save
-  , setGlobalAlpha
-  , setGlobalCompositeOperation
-  , setGradientFillStyle
-  , setLineWidth
-  , setPatternFillStyle
-  , setTextAlign
-  , setTextBaseline
-  , setTransform
-  , stroke
-  , tryLoadImage
-  )
+import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke, tryLoadImage)
 import Graphics.Canvas as C
 import Math (cos, floor, pi, sin)
 
 newtype Picture sprite = Picture
-  (Context2D -> (sprite -> Maybe CanvasImageSource) -> Aff Unit)
+  (Context2D -> (sprite -> Maybe CanvasImageSource) -> Effect Unit)
 
 instance Semigroup (Picture sprite) where
   append = composite SourceOver
@@ -109,7 +77,7 @@ drawPicture
    . Context2D
   -> (sprite -> Maybe CanvasImageSource)
   -> Picture sprite
-  -> Aff Unit
+  -> Effect Unit
 drawPicture ctx canvasImageSources (Picture f) = do
   f ctx canvasImageSources
 
@@ -119,9 +87,9 @@ saveAndRestore ctx f = do
   f
   liftEffect $ restore ctx
 
--- | Aff version of tryLoadImage
-tryLoadImageAff :: String -> Aff CanvasImageSource
-tryLoadImageAff str = makeAff \thrower -> do
+-- | Effect version of tryLoadImage
+tryLoadImageEffect :: String -> Aff CanvasImageSource
+tryLoadImageEffect str = makeAff \thrower -> do
   tryLoadImage str $ case _ of
     Just x -> thrower $ Right x
     Nothing -> thrower $ Left $ error $ "Image LoadingError: " <> str
@@ -323,14 +291,14 @@ drawWithTransform f = Picture \ctx img -> do
 -- | It is not recommended to use this system except for the glapple system.
 absorb'
   :: forall s
-   . (Context2D -> (s -> Maybe CanvasImageSource) -> Aff (Picture s))
+   . (Context2D -> (s -> Maybe CanvasImageSource) -> Effect (Picture s))
   -> Picture s
 absorb' affPic = Picture \ctx img -> do
   pic <- affPic ctx img
   drawPicture ctx img pic
 
--- | Embeds the action of Aff into the Picture.
-absorb :: forall s. Aff (Picture s) -> Picture s
+-- | Embeds the action of Effect into the Picture.
+absorb :: forall s. Effect (Picture s) -> Picture s
 absorb affPic = Picture \ctx img -> do
   pic <- affPic
   drawPicture ctx img pic
