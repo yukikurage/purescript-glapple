@@ -15,9 +15,9 @@ module Graphics.Glapple.Data.Picture
   , absorb
   , absorb'
   , addComposite
-  , angleToTransform
   , arc
   , color
+  , composite
   , destinationOverComposite
   , drawPicture
   , drawWithTransform
@@ -27,7 +27,6 @@ module Graphics.Glapple.Data.Picture
   , line
   , lineWidth
   , multiplyComposite
-  , composite
   , multiplyTransform
   , opacity
   , paint
@@ -42,8 +41,6 @@ module Graphics.Glapple.Data.Picture
   , textBaseLine
   , transform
   , translate
-  , translateToTransform
-  , tryLoadImageEffect
   ) where
 
 import Prelude
@@ -51,13 +48,11 @@ import Prelude
 import Color (Color, cssStringRGBA)
 import Control.Safely (for_)
 import Data.Array (uncons)
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
-import Effect.Aff (Aff, error, makeAff)
 import Effect.Class (class MonadEffect, liftEffect)
-import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke, tryLoadImage)
+import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke)
 import Graphics.Canvas as C
 import Math (cos, floor, pi, sin)
 
@@ -86,14 +81,6 @@ saveAndRestore ctx f = do
   liftEffect $ save ctx
   f
   liftEffect $ restore ctx
-
--- | Effect version of tryLoadImage
-tryLoadImageEffect :: String -> Aff CanvasImageSource
-tryLoadImageEffect str = makeAff \thrower -> do
-  tryLoadImage str $ case _ of
-    Just x -> thrower $ Right x
-    Nothing -> thrower $ Left $ error $ "Image LoadingError: " <> str
-  pure mempty
 
 data DrawStyle sprite
   = LinearGradient
@@ -188,7 +175,13 @@ instance Show FontWeight where
     Bold -> "bold"
     FontWeight i -> show i
 
-data FontFamily = Serif | SansSerif | Cursive | Fantasy | Monospace | Manual String
+data FontFamily
+  = Serif
+  | SansSerif
+  | Cursive
+  | Fantasy
+  | Monospace
+  | Manual String
 
 derive instance Eq FontFamily
 derive instance Ord FontFamily
@@ -261,19 +254,6 @@ infixl 5 sourceOverComposite as <-^
 infixl 5 destinationOverComposite as <-.
 infixl 5 multiplyComposite as <-*
 infixl 5 addComposite as <-+
-
--- | Translate a picture.
-translate :: forall s. Number -> Number -> Picture s -> Picture s
-translate x y = operate
-  (\ctx -> C.translate ctx { translateX: x, translateY: y })
-
--- | Scale a picture.
-scale :: forall s. Number -> Number -> Picture s -> Picture s
-scale sx sy = operate (\ctx -> C.scale ctx { scaleX: sx, scaleY: sy })
-
--- | Rotate a picture. (Clockwise)
-rotate :: forall s. Number -> Picture s -> Picture s
-rotate r = operate (flip C.rotate r)
 
 transform :: forall s. Transform -> Picture s -> Picture s
 transform trans = operate (flip C.transform trans)
@@ -462,14 +442,18 @@ fan style { radius, start, angle } = Picture \ctx _ -> saveAndRestore ctx $
 ---------------------------
 
 -- | convert angle to Transform
-angleToTransform :: Number -> Transform
-angleToTransform x =
+rotate :: Number -> Transform
+rotate x =
   { m11: cos x, m12: sin x, m21: -sin x, m22: cos x, m31: 0.0, m32: 0.0 }
 
 -- | convert parallel movement to Transform
-translateToTransform :: Number -> Number -> Transform
-translateToTransform x y =
+translate :: Number -> Number -> Transform
+translate x y =
   { m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: x, m32: y }
+
+scale :: Number -> Number -> Transform
+scale x y =
+  { m11: x, m12: 0.0, m21: 0.0, m22: y, m31: 0.0, m32: 0.0 }
 
 foreign import multiplyTransform
   :: Transform -> Transform -> Transform
