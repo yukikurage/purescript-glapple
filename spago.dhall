@@ -1,5 +1,13 @@
 { name = "glapple"
-, dependencies = [ "canvas", "colors", "indexed-monad", "record", "safely" ]
+, dependencies =
+    [ "canvas"
+    , "colors"
+    , "indexed-monad"
+    , "ordered-collections"
+    , "record"
+    , "safely"
+    , "unordered-collections"
+    ]
 , packages = ./packages.dhall
 , license = "MIT"
 , sources = [ "src/**/*.purs" ]

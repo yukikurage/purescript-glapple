@@ -3,10 +3,13 @@ module Graphics.Glapple.Data.SpriteData where
 import Prelude
 
 import Data.Either (Either(..))
+import Data.HashMap (HashMap, fromArray)
+import Data.Hashable (class Hashable)
 import Data.Maybe (Maybe(..))
+import Data.Traversable (for)
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, error, makeAff)
 import Graphics.Canvas (CanvasImageSource, tryLoadImage)
-import Graphics.Glapple.Data.Picture (Picture)
 
 tryLoadImageAff :: String -> Aff CanvasImageSource
 tryLoadImageAff src = makeAff \f -> do
@@ -15,4 +18,13 @@ tryLoadImageAff src = makeAff \f -> do
     Just img -> f $ Right img
   pure mempty
 
-data SpriteData s = FromImage s String | FromPicture s (Picture s)
+loadImages
+  :: forall s
+   . Hashable s
+  => Array (s /\ String)
+  -> Aff (HashMap s CanvasImageSource)
+loadImages xs = do
+  ys <- for xs \(s /\ src) -> do
+    img <- tryLoadImageAff src
+    pure $ s /\ img
+  pure $ fromArray ys
