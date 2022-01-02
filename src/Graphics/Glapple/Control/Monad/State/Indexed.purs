@@ -10,7 +10,7 @@ import Control.Monad.State.Class.Indexed (class IxMonadState)
 import Data.Functor.Indexed (class IxFunctor)
 import Data.Tuple (Tuple(..), fst, snd)
 
-data IxState x y a = IxState (x -> Tuple a y)
+newtype IxState x y a = IxState (x -> Tuple a y)
 
 instance IxFunctor IxState where
   imap f (IxState g) = IxState \x ->
