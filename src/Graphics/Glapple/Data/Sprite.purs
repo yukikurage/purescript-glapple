@@ -1,4 +1,4 @@
-module Graphics.Glapple.Data.SpriteData where
+module Graphics.Glapple.Data.Sprite where
 
 import Prelude
 
@@ -7,9 +7,11 @@ import Data.HashMap (HashMap, fromArray)
 import Data.Hashable (class Hashable)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (for)
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff, error, makeAff)
 import Graphics.Canvas (CanvasImageSource, tryLoadImage)
+
+data Sprite s = Source s String
 
 tryLoadImageAff :: String -> Aff CanvasImageSource
 tryLoadImageAff src = makeAff \f -> do
@@ -18,13 +20,13 @@ tryLoadImageAff src = makeAff \f -> do
     Just img -> f $ Right img
   pure mempty
 
-loadImages
+loadSprites
   :: forall s
    . Hashable s
-  => Array (s /\ String)
+  => Array (Sprite s)
   -> Aff (HashMap s CanvasImageSource)
-loadImages xs = do
-  ys <- for xs \(s /\ src) -> do
+loadSprites xs = do
+  ys <- for xs \(Source s src) -> do
     img <- tryLoadImageAff src
     pure $ s /\ img
   pure $ fromArray ys
