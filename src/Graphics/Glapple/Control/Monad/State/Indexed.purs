@@ -1,4 +1,4 @@
-module Control.Monad.State.Indexed where
+module Graphics.Glapple.Control.Monad.State.Indexed where
 
 import Prelude
 
