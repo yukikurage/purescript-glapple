@@ -6,9 +6,9 @@ import Control.Applicative.Indexed (class IxApplicative, iapply, imap, ipure)
 import Control.Apply.Indexed (class IxApply)
 import Control.Bind.Indexed (class IxBind, ibind)
 import Control.Monad.Indexed (class IxMonad)
-import Control.Monad.State.Class.Indexed (class IxMonadState)
 import Data.Functor.Indexed (class IxFunctor)
 import Data.Tuple (Tuple(..), fst, snd)
+import Graphics.Glapple.Control.Monad.State.Class.Indexed (class IxMonadState)
 
 newtype IxState x y a = IxState (x -> Tuple a y)
 

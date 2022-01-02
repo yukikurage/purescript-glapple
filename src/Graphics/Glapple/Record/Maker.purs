@@ -1,4 +1,19 @@
-module Graphics.Glapple.Record.Maker where
+module Graphics.Glapple.Record.Maker
+  ( Maker
+  , delete
+  , disjointUnion
+  , get
+  , insert
+  , make
+  , makeFromScratch
+  , merge
+  , modify
+  , nub
+  , ref
+  , rename
+  , set
+  , union
+  ) where
 
 import Prelude
 
@@ -145,4 +160,4 @@ nub
 nub = Maker $ unsafeCoerce >>> Tuple unit
 
 ref :: forall x. Maker x x (Record x)
-ref = Maker \x -> Tuple x x
+ref = Maker \x -> Tuple (copy x) x

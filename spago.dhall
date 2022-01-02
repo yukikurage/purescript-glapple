@@ -2,6 +2,8 @@
 , dependencies =
     [ "canvas"
     , "colors"
+    , "console"
+    , "debug"
     , "indexed-monad"
     , "ordered-collections"
     , "record"
@@ -10,6 +12,6 @@
     ]
 , packages = ./packages.dhall
 , license = "MIT"
-, sources = [ "src/**/*.purs" ]
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 , repository = "https://github.com/yukikurage/purescript-glapple"
 }
