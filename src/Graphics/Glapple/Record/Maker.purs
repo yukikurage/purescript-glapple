@@ -150,6 +150,7 @@ disjointUnion
   => Record x
   -> Maker y z Unit
 disjointUnion x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit
+
 nub
   :: forall x y
    . Nub x y
