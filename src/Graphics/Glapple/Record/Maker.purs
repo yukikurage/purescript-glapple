@@ -71,10 +71,12 @@ make (Maker f) x = f $ copy x
 makeFromScratch :: forall t36 t37. Maker () t36 t37 -> Tuple t37 (Record t36)
 makeFromScratch maker = make maker {}
 
+-- | O(1)
 get
   :: forall proxy p a x y. IsSymbol p => Cons p a y x => proxy p -> Maker x x a
 get p = Maker \x -> Tuple (Record.get p x) x
 
+-- | O(1)
 set
   :: forall proxy x y z p a b
    . IsSymbol p
@@ -85,6 +87,7 @@ set
   -> Maker x y Unit
 set p b = modify p (const b)
 
+-- | O(1)
 modify
   :: forall proxy p a b x y z
    . Cons p a z x
@@ -95,6 +98,7 @@ modify
   -> Maker x y Unit
 modify p f = Maker $ unsafeModify (reflectSymbol p) f >>> Tuple unit
 
+-- | O(1)
 insert
   :: forall proxy p a x y
    . Cons p a x y
@@ -105,6 +109,7 @@ insert
   -> Maker x y Unit
 insert p a = Maker $ unsafeInsert (reflectSymbol p) a >>> Tuple unit
 
+-- | O(1)
 delete
   :: forall proxy p a x y
    . IsSymbol p
@@ -114,6 +119,7 @@ delete
   -> Maker x y Unit
 delete p = Maker $ unsafeDelete (reflectSymbol p) >>> Tuple unit
 
+-- | O(1)
 rename
   :: forall proxy p q a x y z
    . IsSymbol p
@@ -136,6 +142,9 @@ merge
   -> Maker y w Unit
 merge x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit
 
+-- | O(|x|)
+-- | where
+-- | union x
 union
   :: forall x y z
    . Union x y z
@@ -151,11 +160,13 @@ disjointUnion
   -> Maker y z Unit
 disjointUnion x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit
 
+-- | O(1)
 nub
   :: forall x y
    . Nub x y
   => Maker x y Unit
 nub = Maker $ unsafeCoerce >>> Tuple unit
 
+-- | O(N)
 ref :: forall x. Maker x x (Record x)
 ref = Maker \x -> Tuple (copy x) x
