@@ -2,13 +2,12 @@
 , dependencies =
     [ "canvas"
     , "colors"
-    , "console"
-    , "debug"
-    , "indexed-monad"
-    , "ordered-collections"
-    , "record"
     , "safely"
     , "unordered-collections"
+
+    -- devDependencies
+    , "console"
+    , "debug"
     ]
 , packages = ./packages.dhall
 , license = "MIT"
