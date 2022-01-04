@@ -1,4 +1,13 @@
-module Graphics.Glapple.Data.Emitter where
+module Graphics.Glapple.Data.Emitter
+  ( Emitter
+  , Registration
+  , addListener
+  , emit
+  , getEmitterFromRegistration
+  , newEmitter
+  , removeAllListener
+  , removeListener
+  ) where
 
 import Prelude
 
@@ -8,7 +17,7 @@ import Data.Hashable (class Hashable)
 import Data.Traversable (for)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Random (random)
-import Effect.Ref (Ref, modify_, new, read)
+import Effect.Ref (Ref, modify_, new, read, write)
 
 type Key = Number
 
@@ -59,3 +68,16 @@ emit (Emitter ref) event = do
     response <- listener event
     pure response
   pure $ fromFoldable responses
+
+removeAllListener
+  :: forall event response m
+   . MonadEffect m
+  => Emitter event response m
+  -> m Unit
+removeAllListener (Emitter ref) = liftEffect $ write empty ref
+
+getEmitterFromRegistration
+  :: forall event response m
+   . Registration event response m
+  -> Emitter event response m
+getEmitterFromRegistration (Registration _ ref) = Emitter ref

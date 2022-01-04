@@ -4,6 +4,7 @@
     , "colors"
     , "console"
     , "debug"
+    , "indexed-monad"
     , "random"
     , "safely"
     , "unordered-collections"
