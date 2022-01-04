@@ -38,87 +38,94 @@ foreign import unsafeDelete :: forall x y. String -> Record x -> Record y
 foreign import unsafeRename
   :: forall x y. String -> String -> Record x -> Record y
 
-newtype Maker x y a = Maker (Record x -> Tuple a (Record y))
+newtype Maker m x y a = Maker (Record x -> m (Tuple a (Record y)))
 
-instance IxFunctor Maker where
-  imap f (Maker g) = Maker \x -> let Tuple a y = g x in Tuple (f a) y
+instance Functor m => IxFunctor (Maker m) where
+  imap f (Maker g) = Maker \x -> (\(Tuple a y) -> Tuple (f a) y) <$> g x
 
-instance IxApply Maker where
-  iapply (Maker f) (Maker g) = Maker \x ->
+instance Monad m => IxApply (Maker m) where
+  iapply (Maker f) (Maker g) = Maker \x -> do
+    Tuple h y <- f x
+    Tuple a z <- g y
+    pure $ Tuple (h a) z
+
+instance Monad m => IxApplicative (Maker m) where
+  ipure a = Maker \x -> pure $ Tuple a x
+
+instance Monad m => IxBind (Maker m) where
+  ibind (Maker f) g = Maker \x -> do
+    Tuple a y <- f x
     let
-      Tuple h y = f x
-      Tuple a z = g y
-    in
-      Tuple (h a) z
-
-instance IxApplicative Maker where
-  ipure a = Maker \x -> Tuple a x
-
-instance IxBind Maker where
-  ibind (Maker f) g = Maker \x ->
-    let
-      Tuple a y = f x
       Maker h = g a
-    in
-      h y
+    h y
 
-instance IxMonad Maker
+instance Monad m => IxMonad (Maker m)
 
-make :: forall x y a. Maker x y a -> (Record x -> Tuple a (Record y))
+make :: forall m x y a. Maker m x y a -> Record x -> m (Tuple a (Record y))
 make (Maker f) x = f $ copy x
 
 -- | O(1)
 get
-  :: forall proxy p a x y. IsSymbol p => Cons p a y x => proxy p -> Maker x x a
-get p = Maker \x -> Tuple (Record.get p x) x
+  :: forall proxy p a x y m
+   . IsSymbol p
+  => Applicative m
+  => Cons p a y x
+  => proxy p
+  -> Maker m x x a
+get p = Maker \x -> pure $ Tuple (Record.get p x) x
 
 -- | O(1)
 set
-  :: forall proxy x y z p a b
+  :: forall proxy x y z p a b m
    . IsSymbol p
+  => Applicative m
   => Cons p a z x
   => Cons p b z y
   => proxy p
   -> b
-  -> Maker x y Unit
+  -> Maker m x y Unit
 set p b = modify p (const b)
 
 -- | O(1)
 modify
-  :: forall proxy p a b x y z
+  :: forall proxy p a b x y z m
    . Cons p a z x
+  => Applicative m
   => Cons p b z y
   => IsSymbol p
   => proxy p
   -> (a -> b)
-  -> Maker x y Unit
-modify p f = Maker $ unsafeModify (reflectSymbol p) f >>> Tuple unit
+  -> Maker m x y Unit
+modify p f = Maker $ unsafeModify (reflectSymbol p) f >>> Tuple unit >>> pure
 
 -- | O(1)
 insert
-  :: forall proxy p a x y
+  :: forall proxy p a x y m
    . Cons p a x y
+  => Applicative m
   => Lacks p x
   => IsSymbol p
   => proxy p
   -> a
-  -> Maker x y Unit
-insert p a = Maker $ unsafeInsert (reflectSymbol p) a >>> Tuple unit
+  -> Maker m x y Unit
+insert p a = Maker $ unsafeInsert (reflectSymbol p) a >>> Tuple unit >>> pure
 
 -- | O(1)
 delete
-  :: forall proxy p a x y
+  :: forall proxy p a x y m
    . IsSymbol p
+  => Applicative m
   => Lacks p y
   => Cons p a y x
   => proxy p
-  -> Maker x y Unit
-delete p = Maker $ unsafeDelete (reflectSymbol p) >>> Tuple unit
+  -> Maker m x y Unit
+delete p = Maker $ unsafeDelete (reflectSymbol p) >>> Tuple unit >>> pure
 
 -- | O(1)
 rename
-  :: forall proxy p q a x y z
+  :: forall proxy p q a x y z m
    . IsSymbol p
+  => Applicative m
   => IsSymbol q
   => Cons p a z x
   => Lacks p z
@@ -126,43 +133,48 @@ rename
   => Lacks q z
   => proxy p
   -> proxy q
-  -> Maker x y Unit
-rename p q = Maker $ unsafeRename (reflectSymbol p) (reflectSymbol q) >>>
-  Tuple unit
+  -> Maker m x y Unit
+rename p q = Maker $ unsafeRename (reflectSymbol p) (reflectSymbol q)
+  >>> Tuple unit
+  >>> pure
 
 merge
-  :: forall x y z w
+  :: forall x y z w m
    . Union x y z
+  => Applicative m
   => Nub z w
   => Record x
-  -> Maker y w Unit
-merge x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit
+  -> Maker m y w Unit
+merge x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit >>> pure
 
 -- | O(|x|)
 -- | where
 -- | union x
 union
-  :: forall x y z
+  :: forall x y z m
    . Union x y z
+  => Applicative m
   => Record x
-  -> Maker y z Unit
-union x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit
+  -> Maker m y z Unit
+union x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit >>> pure
 
 disjointUnion
-  :: forall x y z
+  :: forall x y z m
    . Union x y z
+  => Applicative m
   => Nub z z
   => Record x
-  -> Maker y z Unit
-disjointUnion x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit
+  -> Maker m y z Unit
+disjointUnion x = Maker $ runFn2 unsafeUnionFn x >>> Tuple unit >>> pure
 
 -- | O(1)
 nub
-  :: forall x y
+  :: forall x y m
    . Nub x y
-  => Maker x y Unit
-nub = Maker $ unsafeCoerce >>> Tuple unit
+  => Applicative m
+  => Maker m x y Unit
+nub = Maker $ unsafeCoerce >>> Tuple unit >>> pure
 
 -- | O(N)
-ref :: forall x. Maker x x (Record x)
-ref = Maker \x -> Tuple (copy x) x
+ref :: forall x m. Applicative m => Maker m x x (Record x)
+ref = Maker \x -> pure $ Tuple (copy x) x
