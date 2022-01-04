@@ -2,12 +2,11 @@
 , dependencies =
     [ "canvas"
     , "colors"
-    , "safely"
-    , "unordered-collections"
-
-    -- devDependencies
     , "console"
     , "debug"
+    , "random"
+    , "safely"
+    , "unordered-collections"
     ]
 , packages = ./packages.dhall
 , license = "MIT"

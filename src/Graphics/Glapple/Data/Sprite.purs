@@ -1,4 +1,8 @@
-module Graphics.Glapple.Data.Sprite where
+module Graphics.Glapple.Data.Sprite
+  ( Sprite(..)
+  , loadSprites
+  , tryLoadImageAff
+  ) where
 
 import Prelude
 
