@@ -12,8 +12,6 @@ module Graphics.Glapple.Data.Emitter
 import Prelude
 
 import Data.HashMap (HashMap, delete, empty, insert, values)
-import Data.HashSet (HashSet, fromFoldable)
-import Data.Hashable (class Hashable)
 import Data.Traversable (for)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Random (random)
@@ -58,16 +56,14 @@ removeListener (Registration key ref) = liftEffect $ modify_
 emit
   :: forall m event response
    . MonadEffect m
-  => Hashable response
   => Emitter event response m
   -> event
-  -> m (HashSet response)
+  -> m (Array response)
 emit (Emitter ref) event = do
   listeners <- liftEffect $ read ref
-  responses <- for (values listeners) $ \listener -> do
+  for (values listeners) $ \listener -> do
     response <- listener event
     pure response
-  pure $ fromFoldable responses
 
 removeAllListener
   :: forall event response m

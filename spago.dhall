@@ -5,6 +5,7 @@
     , "console"
     , "debug"
     , "indexed-monad"
+    , "now"
     , "random"
     , "safely"
     , "unordered-collections"

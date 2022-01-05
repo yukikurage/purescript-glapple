@@ -3,6 +3,7 @@ module Graphics.Glapple.Record.Maker
   , delete
   , disjointUnion
   , get
+  , ilift
   , insert
   , make
   , merge
@@ -60,6 +61,11 @@ instance Monad m => IxBind (Maker m) where
     h y
 
 instance Monad m => IxMonad (Maker m)
+
+ilift :: forall m x a. Monad m => m a -> Maker m x x a
+ilift a = Maker \x -> do
+  a' <- a
+  pure $ Tuple a' x
 
 make :: forall m x y a. Maker m x y a -> Record x -> m (Tuple a (Record y))
 make (Maker f) x = f $ copy x
