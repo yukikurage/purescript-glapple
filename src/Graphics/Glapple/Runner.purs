@@ -1,5 +1,5 @@
 module Graphics.Glapple.Runner
-  ( addRenderer
+  ( run
   , useRenderer
   , useUpdate
   ) where
@@ -17,12 +17,13 @@ import Effect (Effect)
 import Effect.Aff (Milliseconds(..), delay)
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Class.Console (log)
 import Effect.Now (nowTime)
 import Graphics.Canvas (CanvasElement, canvasElementToImageSource, clearRect, drawImage, getCanvasHeight, getCanvasWidth, getContext2D, setCanvasHeight, setCanvasWidth)
 import Graphics.Glapple.Data.Emitter (Emitter, addListener, emit, newEmitter, removeListener)
 import Graphics.Glapple.Data.Picture (Picture, drawPicture)
 import Graphics.Glapple.Data.Sprite (Sprite, loadSprites)
-import Graphics.Glapple.GlappleM (Context(..), GlappleM, addContext, ilift, useContext)
+import Graphics.Glapple.GlappleM (Context(..), GlappleM, addContext, ilift, runGlappleM, useContext)
 import Prim.Row (class Lacks)
 
 foreign import createCanvasElement :: Effect CanvasElement
@@ -32,27 +33,45 @@ rendererEmitterContext
    . Context "rendererEmitter" (Emitter Unit (Picture sprite) m)
 rendererEmitterContext = Context
 
--- | レンダラーを追加
--- | 一つのプロジェクトにつき高々一回
-addRenderer
-  :: forall r m sprite
+run
+  :: forall m r sprite
    . MonadAff m
-  => MonadRec m
-  => Lacks "rendererEmitter" r
   => Hashable sprite
+  => MonadRec m
   => Number
   -> Array (Sprite sprite)
   -> CanvasElement
   -> GlappleM m
+       ( rendererEmitter :: Emitter Unit (Picture sprite) m
+       )
        r
-       (rendererEmitter :: Emitter Unit (Picture sprite) m | r)
        Unit
+  -> (m Unit)
+run fps sprites canvas game = join $ runGlappleM Ix.do
+  runner <- makeRunner fps sprites canvas
+  game
+  ipure runner
 
-addRenderer fps sprites canvas = Ix.do
+-- | ゲームを開始するアクションを返す
+makeRunner
+  :: forall r m sprite
+   . Lacks "rendererEmitter" r
+  => MonadAff m
+  => Hashable sprite
+  => MonadRec m
+  => Number
+  -> Array (Sprite sprite)
+  -> CanvasElement
+  -> GlappleM m r
+       ( rendererEmitter :: Emitter Unit (Picture sprite) m
+       | r
+       )
+       (m Unit)
+makeRunner fps sprites canvas = Ix.do
   rendererEmitter <- ilift $ newEmitter
   addContext rendererEmitterContext rendererEmitter
 
-  ilift $ do
+  ipure $ do
     ctx <- liftEffect $ getContext2D canvas
 
     -- 裏画面の生成
@@ -92,14 +111,15 @@ addRenderer fps sprites canvas = Ix.do
 useRenderer
   :: forall m r sprite
    . MonadEffect m
-  => (Unit -> m (Picture sprite))
+  => (m (Picture sprite))
   -> GlappleM m
        (rendererEmitter :: Emitter Unit (Picture sprite) m | r)
        (rendererEmitter :: Emitter Unit (Picture sprite) m | r)
        (m Unit)
 useRenderer renderer = Ix.do
   rendererEmitter <- useContext rendererEmitterContext
-  registration <- ilift $ addListener rendererEmitter renderer
+  ilift $ log "added"
+  registration <- ilift $ addListener rendererEmitter \_ -> renderer
   ipure $ removeListener registration
 
 useUpdate

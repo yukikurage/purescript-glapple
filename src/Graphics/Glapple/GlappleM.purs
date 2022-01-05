@@ -3,6 +3,7 @@ module Graphics.Glapple.GlappleM
   , GlappleM
   , addContext
   , ilift
+  , runGlappleM
   , useContext
   ) where
 
@@ -14,6 +15,7 @@ import Control.Monad.Indexed (class IxMonad)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Functor.Indexed (class IxFunctor)
 import Data.Symbol (class IsSymbol)
+import Data.Tuple (fst, snd)
 import Graphics.Glapple.Record.Maker (Maker, get, insert)
 import Graphics.Glapple.Record.Maker as Maker
 import Prim.Row (class Cons, class Lacks)
@@ -59,3 +61,10 @@ ilift
   => m a
   -> GlappleM m x x a
 ilift = GlappleM <<< Maker.ilift
+
+runGlappleM
+  :: forall m r x
+   . Applicative m
+  => GlappleM m () r x
+  -> m x
+runGlappleM (GlappleM maker) = fst <$> Maker.make maker {}

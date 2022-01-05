@@ -60,8 +60,8 @@ emit
   -> event
   -> m (Array response)
 emit (Emitter ref) event = do
-  listeners <- liftEffect $ read ref
-  for (values listeners) $ \listener -> do
+  emitter <- liftEffect $ read ref
+  for (values emitter) $ \listener -> do
     response <- listener event
     pure response
 
