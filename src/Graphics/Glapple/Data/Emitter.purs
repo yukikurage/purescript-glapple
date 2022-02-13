@@ -1,79 +1,85 @@
 module Graphics.Glapple.Data.Emitter
-  ( Emitter
-  , Registration
+  ( Emitter(..)
+  , Key
+  , Priority
   , addListener
+  , addListener_
   , emit
-  , getEmitterFromRegistration
   , newEmitter
   , removeAllListener
-  , removeListener
   ) where
 
 import Prelude
 
-import Data.HashMap (HashMap, delete, empty, insert, values)
-import Data.Traversable (for)
+import Control.Monad.Rec.Class (class MonadRec)
+import Control.Safely (for_)
+import Data.Map (Map, delete, empty, insert)
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Random (random)
 import Effect.Ref (Ref, modify_, new, read, write)
 
-type Key = Number
+type Key = Number /\ Number -- Priority /\ Random 優先度が高いほど先に実行される
 
-type Internal :: forall k. Type -> k -> (k -> Type) -> Type
-type Internal event response m = (Ref (HashMap Key (event -> m response)))
+type Priority = Int
 
-data Registration :: forall k. Type -> k -> (k -> Type) -> Type
-data Registration event response m = Registration Key
-  (Internal event response m)
-
-newtype Emitter :: forall k. Type -> k -> (k -> Type) -> Type
-newtype Emitter event response m = Emitter (Internal event response m)
+newtype Emitter event m = Emitter
+  (Ref (Map Key (event -> m Unit -> m Unit)))
 
 newEmitter
-  :: forall m event response. MonadEffect m => m (Emitter event response m)
+  :: forall m event. MonadEffect m => m (Emitter event m)
 newEmitter = Emitter <$> (liftEffect $ new empty)
 
-addListener
-  :: forall m event response
+addListener_
+  :: forall m event
    . MonadEffect m
-  => Emitter event response m
-  -> (event -> m response)
-  -> m (Registration event response m)
-addListener (Emitter ref) listener = do
+  => Emitter event m
+  -> Number
+  -> (event -> m Unit)
+  -> m (m Unit)
+addListener_ (Emitter ref) priority listenerTemp = do
   key <- liftEffect $ random
-  liftEffect $ modify_ (insert key listener) ref
-  pure $ Registration key ref
+  let
+    listener event _ = listenerTemp event
+  liftEffect $ modify_ (insert (-priority /\ key) $ listener) ref
+  pure $ liftEffect $ modify_ (delete (-priority /\ key)) ref
 
-removeListener
-  :: forall m event response
+addListener
+  :: forall m event
    . MonadEffect m
-  => Registration event response m
-  -> m Unit
-removeListener (Registration key ref) = liftEffect $ modify_
-  (delete key)
-  ref
+  => Emitter event m
+  -> Number
+  -> (event -> (m Unit) -> m Unit)
+  -> m (m Unit)
+addListener (Emitter ref) priority listener = do
+  key <- liftEffect $ random
+  liftEffect $ modify_
+    (insert (-priority /\ key) listener)
+    ref
+  pure $ liftEffect $ modify_ (delete (-priority /\ key)) ref
 
 emit
-  :: forall m event response
+  :: forall m event
    . MonadEffect m
-  => Emitter event response m
+  => MonadRec m
+  => Emitter event m
   -> event
-  -> m (Array response)
+  -> m Unit
 emit (Emitter ref) event = do
   emitter <- liftEffect $ read ref
-  for (values emitter) $ \listener -> do
-    response <- listener event
-    pure response
+  isContinueRef <- liftEffect $ new true
+
+  let
+    prevent = liftEffect $ write false isContinueRef
+  for_ emitter \listener -> do
+    isContinue <- liftEffect $ read isContinueRef
+    if isContinue then do
+      listener event prevent
+    else pure unit
 
 removeAllListener
-  :: forall event response m
+  :: forall event m
    . MonadEffect m
-  => Emitter event response m
+  => Emitter event m
   -> m Unit
 removeAllListener (Emitter ref) = liftEffect $ write empty ref
-
-getEmitterFromRegistration
-  :: forall event response m
-   . Registration event response m
-  -> Emitter event response m
-getEmitterFromRegistration (Registration _ ref) = Emitter ref

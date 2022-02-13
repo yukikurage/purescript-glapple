@@ -2,30 +2,30 @@ module Graphics.Glapple.Hooks.UseRenderer where
 
 import Prelude
 
-import Effect.Class (class MonadEffect)
-import Graphics.Glapple.Contexts (rendererEmitterContext)
-import Graphics.Glapple.Data.Emitter (Emitter, addListener, removeListener)
-import Graphics.Glapple.Data.Hooks (Hooks, useContext)
-import Graphics.Glapple.Data.Hooks.Qualified as H
-import Graphics.Glapple.Data.Picture (Picture)
+import Control.Monad.Reader (ask)
+import Effect (Effect)
+import Effect.Class (liftEffect)
+import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Emitter (addListener_)
+import Graphics.Glapple.Data.Picture (Picture, drawPicture, transform)
 import Graphics.Glapple.Hooks.UseFinalize (useFinalize)
+import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
 
+-- | Rendererを追加します．
+-- | 第1引数(layer)の値が小さいほど手前に描画されます．
 useRenderer
-  :: forall t9 t16 t40
-   . Monad t9
-  => MonadEffect t9
-  => ({ deltaTime :: Number } -> t9 (Picture t16))
-  -> Hooks t9
-       ( finalizeEmitter :: Emitter Unit Unit t9
-       , rendererEmitter :: Emitter { deltaTime :: Number } (Picture t16) t9
-       | t40
-       )
-       ( finalizeEmitter :: Emitter Unit Unit t9
-       , rendererEmitter :: Emitter { deltaTime :: Number } (Picture t16) t9
-       | t40
-       )
-       Unit
-useRenderer render = H.do
-  rendererEmitter <- useContext rendererEmitterContext
-  registration <- H.lift $ addListener rendererEmitter render
-  useFinalize $ removeListener registration
+  :: forall sprite
+   . Number
+  -> Effect (Picture sprite)
+  -> Component sprite Unit
+useRenderer layer picture = do
+  getTransform <- useGlobalTransform
+
+  { rendererEmitter } <- ask
+  remove <- liftEffect $ addListener_ rendererEmitter layer
+    \{ canvasImageSources, ctx } -> do
+      trans <- getTransform
+      pic <- picture
+      drawPicture ctx canvasImageSources $ transform trans pic
+
+  useFinalize remove

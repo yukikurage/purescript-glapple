@@ -7,8 +7,7 @@ module Graphics.Glapple.Data.Sprite
 import Prelude
 
 import Data.Either (Either(..))
-import Data.HashMap (HashMap, fromArray)
-import Data.Hashable (class Hashable)
+import Data.Map (Map, fromFoldable)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (for)
 import Data.Tuple.Nested ((/\))
@@ -26,11 +25,11 @@ tryLoadImageAff src = makeAff \f -> do
 
 loadSprites
   :: forall s
-   . Hashable s
+   . Ord s
   => Array (Sprite s)
-  -> Aff (HashMap s CanvasImageSource)
+  -> Aff (Map s CanvasImageSource)
 loadSprites xs = do
   ys <- for xs \(Source s src) -> do
     img <- tryLoadImageAff src
     pure $ s /\ img
-  pure $ fromArray ys
+  pure $ fromFoldable ys

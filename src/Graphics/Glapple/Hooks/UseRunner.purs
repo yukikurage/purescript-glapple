@@ -2,40 +2,78 @@ module Graphics.Glapple.Hooks.UseRunner where
 
 import Prelude
 
-import Data.Identity (Identity(..))
-import Data.Tuple (snd)
-import Effect.Class (class MonadEffect)
-import Graphics.Glapple.Contexts (finalizeEmitterContext)
-import Graphics.Glapple.Data.Context (key)
-import Graphics.Glapple.Data.Emitter (Emitter, emit, newEmitter)
-import Graphics.Glapple.Data.Hooks (Hooks, addContext, addContexts, runHooks, useContexts)
-import Graphics.Glapple.Data.Hooks.Qualified as H
-import Graphics.Glapple.Record.Maker (delete, make)
-import Prim.Row (class Lacks, class Nub, class Union)
+import Control.Monad.Reader (ask)
+import Data.Tuple.Nested (type (/\), (/\))
+import Effect (Effect)
+import Effect.Class (liftEffect)
+import Effect.Ref (new)
+import Graphics.Canvas (Transform)
+import Graphics.Glapple.Data.Component (Component, runComponent)
+import Graphics.Glapple.Data.Emitter (addListener_, emit, newEmitter)
+import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
+import Graphics.Glapple.Util (unitTransform)
 
--- | 子ゲームを実行するためのHook
-
+-- | コンポーネントを生成
 useRunner
-  :: forall r m z
-   . MonadEffect m
-  => Lacks "finalizeEmitter" r
-  => Union r () r
-  => Nub r r
-  => Hooks m (finalizeEmitter :: Emitter Unit Unit m | r) z Unit
-  -> Hooks m (finalizeEmitter :: Emitter Unit Unit m | r)
-       (finalizeEmitter :: Emitter Unit Unit m | r)
-       (m (m Unit))
-useRunner child = H.do
-  contexts <- useContexts
+  :: forall sprite a
+   . Component sprite a
+  -> Component sprite ((Transform -> Effect a) /\ Effect Unit)
+useRunner component = do
+  allFinalizeEmitter <- liftEffect newEmitter
+  { rendererEmitter, rayEmitter, keyEmitter, keyStateRef, mouseStateRef } <- ask
   let
-    Identity childContexts = map snd $ flip make contexts Ix.do
-      delete $ key finalizeEmitterContext --finalizeEmitterは別
+    runner trans = do
+      finalizeEmitter <- newEmitter
+      componentTransform <- new trans
+      _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
+        *>
+          pure unit
+      runComponent
+        { rendererEmitter
+        , rayEmitter
+        , finalizeEmitter
+        , keyEmitter
+        , keyStateRef
+        , componentTransform
+        , mouseStateRef
+        , parentTransform: pure unitTransform
+        }
+        component
+    destroyer = emit allFinalizeEmitter unit *> pure unit
+  pure $ runner /\ destroyer
 
-    launcher :: m (m Unit)
-    launcher = runHooks H.do
-      addContexts childContexts
-      finalizeEmitter <- H.lift newEmitter
-      addContext finalizeEmitterContext (finalizeEmitter :: Emitter Unit Unit m)
-      child
-      H.pure $ emit finalizeEmitter unit *> pure unit
-  H.pure launcher
+-- | 子コンポーネントを生成
+-- | 子コンポーネントのTransformは親のTransformが基準になる
+useChildRunner
+  :: forall sprite a
+   . Component sprite a
+  -> Component sprite ((Transform -> Effect a) /\ Effect Unit)
+useChildRunner component = do
+  allFinalizeEmitter <- liftEffect newEmitter
+  getGlobalTransform <- useGlobalTransform
+  { rendererEmitter
+  , rayEmitter
+  , keyEmitter
+  , keyStateRef
+  , mouseStateRef
+  } <- ask
+  let
+    runner trans = do
+      finalizeEmitter <- newEmitter
+      componentTransform <- new trans
+      _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
+        *>
+          pure unit
+      runComponent
+        { rendererEmitter
+        , rayEmitter
+        , finalizeEmitter
+        , keyEmitter
+        , keyStateRef
+        , componentTransform
+        , mouseStateRef
+        , parentTransform: getGlobalTransform
+        }
+        component
+    destroyer = emit allFinalizeEmitter unit *> pure unit
+  pure $ runner /\ destroyer

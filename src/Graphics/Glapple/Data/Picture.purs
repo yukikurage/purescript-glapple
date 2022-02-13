@@ -3,7 +3,6 @@ module Graphics.Glapple.Data.Picture
   , (<-+)
   , (<-.)
   , (<-^)
-  , (|*|)
   , DrawStyle(..)
   , Font(..)
   , FontFamily(..)
@@ -27,20 +26,16 @@ module Graphics.Glapple.Data.Picture
   , line
   , lineWidth
   , multiplyComposite
-  , multiplyTransform
   , opacity
   , paint
   , polygon
   , rect
-  , rotate
-  , scale
   , sourceOverComposite
   , sprite
   , text
   , textAlign
   , textBaseLine
   , transform
-  , translate
   ) where
 
 import Prelude
@@ -54,7 +49,7 @@ import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
 import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke)
 import Graphics.Canvas as C
-import Math (cos, floor, pi, sin)
+import Math (floor, pi)
 
 newtype Picture sprite = Picture
   (Context2D -> (sprite -> Maybe CanvasImageSource) -> Effect Unit)
@@ -319,7 +314,7 @@ paint drawStyle shape = Picture \ctx img -> saveAndRestore ctx do
 
 -- | Set opacity.
 opacity :: forall s. Number -> Picture s -> Picture s
-opacity o = operate (flip setGlobalAlpha o)
+opacity o = operate (flip setGlobalAlpha (min 1.0 (max 0.0 o)))
 
 -- | Set color
 color :: forall s. Color -> Picture s -> Picture s
@@ -436,26 +431,3 @@ fan style { radius, start, angle } = Picture \ctx _ -> saveAndRestore ctx $
     C.arc ctx { x: 0.0, y: 0.0, start: start', end, radius }
     closePath ctx
     runShape ctx style
-
----------------------------
--- Transform Computation --
----------------------------
-
--- | convert angle to Transform
-rotate :: Number -> Transform
-rotate x =
-  { m11: cos x, m12: sin x, m21: -sin x, m22: cos x, m31: 0.0, m32: 0.0 }
-
--- | convert parallel movement to Transform
-translate :: Number -> Number -> Transform
-translate x y =
-  { m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: x, m32: y }
-
-scale :: Number -> Number -> Transform
-scale x y =
-  { m11: x, m12: 0.0, m21: 0.0, m22: y, m31: 0.0, m32: 0.0 }
-
-foreign import multiplyTransform
-  :: Transform -> Transform -> Transform
-
-infixr 7 multiplyTransform as |*|

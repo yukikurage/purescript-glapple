@@ -2,45 +2,19 @@ module Graphics.Glapple.Hooks.UseUpdate where
 
 import Prelude
 
-import Effect.Class (class MonadEffect)
-import Graphics.Glapple.Contexts (rendererEmitterContext)
-import Graphics.Glapple.Data.Emitter (Emitter, Registration, addListener)
-import Graphics.Glapple.Data.Hooks (Hooks, useContext)
-import Graphics.Glapple.Data.Hooks.Qualified as H
-import Graphics.Glapple.Data.Picture (Picture)
+import Control.Monad.Reader (ask)
+import Effect (Effect)
+import Effect.Class (liftEffect)
+import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Emitter (addListener_)
+import Graphics.Glapple.Hooks.UseFinalize (useFinalize)
 
 useUpdate
-  :: forall m r sprite
-   . MonadEffect m
-  => ( { deltaTime :: Number
-       }
-       -> m Unit
-     )
-  -> Hooks m
-       ( rendererEmitter ::
-           Emitter
-             { deltaTime :: Number
-             }
-             (Picture sprite)
-             m
-       | r
-       )
-       ( rendererEmitter ::
-           Emitter
-             { deltaTime :: Number
-             }
-             (Picture sprite)
-             m
-       | r
-       )
-       ( Registration
-           { deltaTime :: Number
-           }
-           (Picture sprite)
-           m
-       )
-useUpdate updateHandler = H.do
-  rendererEmitter <- useContext rendererEmitterContext
-  H.lift $ addListener rendererEmitter \{ deltaTime } -> do
-    updateHandler { deltaTime }
-    pure mempty
+  :: forall sprite
+   . ({ deltaTime :: Number } -> Effect Unit)
+  -> Component sprite Unit
+useUpdate listener = do
+  { rendererEmitter } <- ask
+  remove <- liftEffect $ addListener_ rendererEmitter 0.0 \{ deltaTime } -> do
+    listener { deltaTime } *> pure mempty
+  useFinalize remove
