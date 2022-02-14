@@ -48,6 +48,6 @@ scale x y =
   { m11: x, m12: 0.0, m21: 0.0, m22: y, m31: 0.0, m32: 0.0 }
 
 unitTransform :: Transform
-unitTransform = {m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: 0.0, m32: 0.0}
+unitTransform = { m11: 1.0, m12: 0.0, m21: 0.0, m22: 1.0, m31: 0.0, m32: 0.0 }
 
 infixr 7 multiplyTransform as |*|

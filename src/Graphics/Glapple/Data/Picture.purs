@@ -30,6 +30,7 @@ module Graphics.Glapple.Data.Picture
   , paint
   , polygon
   , rect
+  , setOrigin
   , sourceOverComposite
   , sprite
   , text
@@ -49,6 +50,7 @@ import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
 import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke)
 import Graphics.Canvas as C
+import Graphics.Glapple.Util (translate)
 import Math (floor, pi)
 
 newtype Picture sprite = Picture
@@ -252,6 +254,9 @@ infixl 5 addComposite as <-+
 
 transform :: forall s. Transform -> Picture s -> Picture s
 transform trans = operate (flip C.transform trans)
+
+setOrigin :: forall sprite. Number -> Number -> Picture sprite -> Picture sprite
+setOrigin x y = transform (translate (-x) (-y))
 
 ------------
 -- Magics --

@@ -14,7 +14,7 @@ import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
 import Effect.Ref (modify_, new, read, write)
 import Graphics.Canvas (CanvasElement, canvasElementToImageSource, clearRect, drawImage, getContext2D, setCanvasHeight, setCanvasWidth)
-import Graphics.Glapple.Data.Component (Component, runComponent)
+import Graphics.Glapple.Data.Component (Component, runComponent, unitComponentTransform)
 import Graphics.Glapple.Data.Emitter (emit, newEmitter)
 import Graphics.Glapple.Data.KeyEvent (KeyCode(..), KeyEvent(..), MouseButton(..))
 import Graphics.Glapple.Data.Sprite (Sprite, loadSprites)
@@ -33,7 +33,7 @@ import Web.UIEvent.MouseEvent as MouseEvent
 import Web.UIEvent.MouseEvent.EventTypes (mousedown, mousemove, mouseup)
 
 runGame
-  :: forall a sprite
+  :: forall props a sprite
    . Ord sprite
   => { canvas :: CanvasElement
      , fps :: Number
@@ -42,9 +42,10 @@ runGame
      , width :: Number
      , initMousePosition :: { x :: Number, y :: Number }
      }
-  -> Component sprite a
+  -> (props -> Component sprite a)
+  -> props
   -> Effect Unit
-runGame { canvas, fps, height, width, sprites, initMousePosition } component =
+runGame { canvas, fps, height, width, sprites, initMousePosition } component props =
   do
     rendererEmitter <- newEmitter
     rayEmitter <- newEmitter
@@ -52,7 +53,7 @@ runGame { canvas, fps, height, width, sprites, initMousePosition } component =
     keyEmitter <- newEmitter
     keyStateRef <- liftEffect $ new S.empty
     mouseStateRef <- liftEffect $ new initMousePosition
-    componentTransform <- liftEffect $ new unitTransform
+    componentTransform <- liftEffect $ new unitComponentTransform
 
     -- 初期化
     _ <- runComponent
@@ -64,8 +65,8 @@ runGame { canvas, fps, height, width, sprites, initMousePosition } component =
       , mouseStateRef
       , componentTransform
       , parentTransform: pure unitTransform
-      }
-      component
+      } $
+      component props
 
     -- 裏画面の生成
     subCanvas <- createCanvasElement

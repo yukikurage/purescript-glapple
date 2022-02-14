@@ -1,4 +1,9 @@
-module Graphics.Glapple.Hooks.UseRunner where
+module Graphics.Glapple.Hooks.UseRunner
+  ( useChildRunner
+  , useChildRunnerNow
+  , useRunner
+  , useRunnerNow
+  ) where
 
 import Prelude
 
@@ -7,24 +12,23 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Ref (new)
-import Graphics.Canvas (Transform)
-import Graphics.Glapple.Data.Component (Component, runComponent)
+import Graphics.Glapple.Data.Component (Component, runComponent, unitComponentTransform)
 import Graphics.Glapple.Data.Emitter (addListener_, emit, newEmitter)
 import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
 import Graphics.Glapple.Util (unitTransform)
 
 -- | コンポーネントを生成
 useRunner
-  :: forall sprite a
-   . Component sprite a
-  -> Component sprite ((Transform -> Effect a) /\ Effect Unit)
+  :: forall props sprite a
+   . (props -> Component sprite a)
+  -> Component sprite ((props -> Effect a) /\ Effect Unit)
 useRunner component = do
   allFinalizeEmitter <- liftEffect newEmitter
   { rendererEmitter, rayEmitter, keyEmitter, keyStateRef, mouseStateRef } <- ask
   let
-    runner trans = do
+    runner props = do
       finalizeEmitter <- newEmitter
-      componentTransform <- new trans
+      componentTransform <- new unitComponentTransform
       _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
         *>
           pure unit
@@ -37,17 +41,26 @@ useRunner component = do
         , componentTransform
         , mouseStateRef
         , parentTransform: pure unitTransform
-        }
-        component
+        } $
+        component props
     destroyer = emit allFinalizeEmitter unit *> pure unit
   pure $ runner /\ destroyer
+
+useRunnerNow
+  :: forall props sprite a
+   . (props -> Component sprite a)
+  -> props
+  -> Component sprite a
+useRunnerNow component props = do
+  runner /\ _ <- useRunner component
+  liftEffect $ runner props
 
 -- | 子コンポーネントを生成
 -- | 子コンポーネントのTransformは親のTransformが基準になる
 useChildRunner
-  :: forall sprite a
-   . Component sprite a
-  -> Component sprite ((Transform -> Effect a) /\ Effect Unit)
+  :: forall props sprite a
+   . (props -> Component sprite a)
+  -> Component sprite ((props -> Effect a) /\ Effect Unit)
 useChildRunner component = do
   allFinalizeEmitter <- liftEffect newEmitter
   getGlobalTransform <- useGlobalTransform
@@ -58,9 +71,9 @@ useChildRunner component = do
   , mouseStateRef
   } <- ask
   let
-    runner trans = do
+    runner props = do
       finalizeEmitter <- newEmitter
-      componentTransform <- new trans
+      componentTransform <- new unitComponentTransform
       _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
         *>
           pure unit
@@ -73,7 +86,16 @@ useChildRunner component = do
         , componentTransform
         , mouseStateRef
         , parentTransform: getGlobalTransform
-        }
-        component
+        } $
+        component props
     destroyer = emit allFinalizeEmitter unit *> pure unit
   pure $ runner /\ destroyer
+
+useChildRunnerNow
+  :: forall props sprite a
+   . (props -> Component sprite a)
+  -> props
+  -> Component sprite a
+useChildRunnerNow component props = do
+  runner /\ _ <- useChildRunner component
+  liftEffect $ runner props
