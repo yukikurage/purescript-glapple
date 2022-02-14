@@ -30,6 +30,8 @@ module Graphics.Glapple.Data.Picture
   , paint
   , polygon
   , rect
+  , rotate
+  , scale
   , setOrigin
   , sourceOverComposite
   , sprite
@@ -37,6 +39,7 @@ module Graphics.Glapple.Data.Picture
   , textAlign
   , textBaseLine
   , transform
+  , translate
   ) where
 
 import Prelude
@@ -48,9 +51,10 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
-import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, Transform, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke)
+import Graphics.Canvas (CanvasGradient, CanvasImageSource, CanvasPattern, Composite(..), Context2D, PatternRepeat, TextAlign, TextBaseline, addColorStop, beginPath, closePath, createLinearGradient, createPattern, createRadialGradient, drawImage, fill, lineTo, moveTo, restore, save, setGlobalAlpha, setGlobalCompositeOperation, setGradientFillStyle, setLineWidth, setPatternFillStyle, setTextAlign, setTextBaseline, setTransform, stroke)
 import Graphics.Canvas as C
-import Graphics.Glapple.Util (translate)
+import Graphics.Glapple.Data.Complex (Complex(..), image, real)
+import Graphics.Glapple.Data.Transform (Transform, toCanvasTransform)
 import Math (floor, pi)
 
 newtype Picture sprite = Picture
@@ -253,10 +257,23 @@ infixl 5 multiplyComposite as <-*
 infixl 5 addComposite as <-+
 
 transform :: forall s. Transform -> Picture s -> Picture s
-transform trans = operate (flip C.transform trans)
+transform t = operate \ctx -> liftEffect $ setTransform ctx $ toCanvasTransform
+  t
 
-setOrigin :: forall sprite. Number -> Number -> Picture sprite -> Picture sprite
-setOrigin x y = transform (translate (-x) (-y))
+translate :: forall s. Complex -> Picture s -> Picture s
+translate cmp = operate
+  (flip C.translate { translateX: real cmp, translateY: image cmp })
+
+scale :: forall s. Complex -> Picture s -> Picture s
+scale cmp = operate
+  (flip C.scale { scaleX: real cmp, scaleY: image cmp })
+
+rotate :: forall s. Number -> Picture s -> Picture s
+rotate angle = operate
+  (flip C.rotate angle)
+
+setOrigin :: forall sprite. Complex -> Picture sprite -> Picture sprite
+setOrigin comp = translate $ -comp
 
 ------------
 -- Magics --
@@ -361,13 +378,13 @@ text style str = Picture \ctx _ -> saveAndRestore ctx $ liftEffect $ do
 polygon
   :: forall sprite
    . Shape
-  -> Array (Number /\ Number)
+  -> Array Complex
   -> Picture sprite
 polygon style path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
   case uncons path of
-    Just { head: (hx /\ hy), tail } -> do
+    Just { head: Complex { real: hx, image: hy }, tail } -> do
       moveTo ctx hx hy
-      for_ tail \(x /\ y) -> lineTo ctx x y
+      for_ tail \(Complex { real: x, image: y }) -> lineTo ctx x y
       closePath ctx
     Nothing -> pure unit
   runShape ctx style
@@ -375,13 +392,13 @@ polygon style path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
 -- | Draw line.
 line
   :: forall sprite
-   . Array (Number /\ Number)
+   . Array Complex
   -> Picture sprite
 line path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
   case uncons path of
-    Just { head: (hx /\ hy), tail } -> do
+    Just { head: Complex { real: hx, image: hy }, tail } -> do
       moveTo ctx hx hy
-      for_ tail \(x /\ y) -> lineTo ctx x y
+      for_ tail \(Complex { real: x, image: y }) -> lineTo ctx x y
     Nothing -> pure unit
   runShape ctx $ Stroke
 
@@ -389,12 +406,12 @@ line path = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
 rect
   :: forall s
    . Shape
-  -> Number
-  -> Number
+  -> Complex
   -> Picture s
-rect style width height = Picture \ctx _ -> saveAndRestore ctx $ liftEffect do
-  C.rect ctx { x: 0.0, y: 0.0, height, width }
-  runShape ctx style
+rect style (Complex { real: width, image: height }) = Picture \ctx _ ->
+  saveAndRestore ctx $ liftEffect do
+    C.rect ctx { x: 0.0, y: 0.0, height, width }
+    runShape ctx style
 
 -- | Draw an arc with stroke.
 -- | Property angle is the rotation angle from the start position.

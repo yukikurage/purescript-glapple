@@ -2,24 +2,27 @@ module Graphics.Glapple.Data.Collider where
 
 import Prelude
 
-import Graphics.Canvas (Transform)
-import Graphics.Glapple.Util (inverseTransform, transform)
+import Graphics.Glapple.Data.Complex (Complex, image, magnitudeSqr, real)
+import Graphics.Glapple.Data.Transform (Transform, inverseTransform, transform)
 
 data Collider
   = ColliderAppend Collider Collider
-  | ColliderRect Number Number
+  | ColliderRect Complex
   | ColliderCircle Number
   | ColliderTransform Transform Collider
   | ColliderEmpty
 
-isCollidePosition :: Number -> Number -> Collider -> Boolean
-isCollidePosition x y = case _ of
-  ColliderAppend c0 c1 -> isCollidePosition x y c0 && isCollidePosition x y c1
-  ColliderRect w h -> 0.0 <= x && x <= w && 0.0 <= y && y <= h
-  ColliderCircle r -> x * x + y * y <= r * r
-  ColliderTransform trans c -> isCollidePosition resX resY c
-    where
-    { x: resX, y: resY } = transform (inverseTransform trans) { x, y }
+isCollidePosition :: Complex -> Collider -> Boolean
+isCollidePosition comp = case _ of
+  ColliderAppend c0 c1 -> isCollidePosition comp c0 || isCollidePosition comp c1
+  ColliderRect comp' -> 0.0 <= real comp && real comp <= real comp'
+    && 0.0 <= image comp
+    &&
+      image comp <= image comp'
+  ColliderCircle r -> magnitudeSqr comp <= r * r
+  ColliderTransform trans c -> isCollidePosition
+    (transform (inverseTransform trans) comp)
+    c
   ColliderEmpty -> false
 
 instance Semigroup Collider where

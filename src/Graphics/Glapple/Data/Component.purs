@@ -1,10 +1,7 @@
 module Graphics.Glapple.Data.Component
   ( Component(..)
-  , ComponentTransform(..)
   , Internal
-  , componentTransformToTransform
   , runComponent
-  , unitComponentTransform
   ) where
 
 import Prelude
@@ -16,28 +13,11 @@ import Data.Set (Set)
 import Effect (Effect)
 import Effect.Class (class MonadEffect)
 import Effect.Ref (Ref)
-import Graphics.Canvas (CanvasImageSource, Context2D, Transform)
+import Graphics.Canvas (CanvasImageSource, Context2D)
+import Graphics.Glapple.Data.Complex (Complex)
 import Graphics.Glapple.Data.Emitter (Emitter)
 import Graphics.Glapple.Data.KeyEvent (KeyCode, KeyEvent)
-import Graphics.Glapple.Util (rotate, scale, translate, (|*|))
-
-data ComponentTransform = ComponentTransform
-  { translate :: { x :: Number, y :: Number }
-  , scale :: { x :: Number, y :: Number }
-  , rotate :: Number
-  }
-
-unitComponentTransform :: ComponentTransform
-unitComponentTransform = ComponentTransform
-  { translate: { x: 0.0, y: 0.0 }, scale: { x: 1.0, y: 1.0 }, rotate: 0.0 }
-
-componentTransformToTransform :: ComponentTransform -> Transform
-componentTransformToTransform
-  ( ComponentTransform
-      { translate: { x: trX, y: trY }, scale: { x: scX, y: scY }, rotate: rt }
-  ) = translate trX trY
-  |*| scale scX scY
-  |*| rotate rt
+import Graphics.Glapple.Data.Transform (Transform)
 
 type Internal sprite =
   { rendererEmitter ::
@@ -48,12 +28,12 @@ type Internal sprite =
         }
         Effect
   , finalizeEmitter :: Emitter Unit Effect
-  , rayEmitter :: Emitter { x :: Number, y :: Number } Effect
+  , rayEmitter :: Emitter Complex Effect
   , keyEmitter :: Emitter KeyEvent Effect
   , keyStateRef :: Ref (Set KeyCode)
-  , mouseStateRef :: Ref { x :: Number, y :: Number }
+  , mouseStateRef :: Ref Complex
   , parentTransform :: Effect Transform
-  , componentTransform :: Ref ComponentTransform
+  , componentTransform :: Ref Transform
   }
 
 newtype Component sprite a = Component (ReaderT (Internal sprite) Effect a)

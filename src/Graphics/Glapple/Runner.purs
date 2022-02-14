@@ -14,11 +14,13 @@ import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
 import Effect.Ref (modify_, new, read, write)
 import Graphics.Canvas (CanvasElement, canvasElementToImageSource, clearRect, drawImage, getContext2D, setCanvasHeight, setCanvasWidth)
-import Graphics.Glapple.Data.Component (Component, runComponent, unitComponentTransform)
+import Graphics.Glapple.Data.Complex (Complex, complex)
+import Graphics.Glapple.Data.Component (Component, runComponent)
 import Graphics.Glapple.Data.Emitter (emit, newEmitter)
 import Graphics.Glapple.Data.KeyEvent (KeyCode(..), KeyEvent(..), MouseButton(..))
 import Graphics.Glapple.Data.Sprite (Sprite, loadSprites)
-import Graphics.Glapple.Util (createCanvasElement, getNowTime, unitTransform)
+import Graphics.Glapple.Data.Transform (unitTransform)
+import Graphics.Glapple.Util (createCanvasElement, getNowTime)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM.Element (clientHeight, clientWidth)
 import Web.Event.EventTarget (addEventListener, eventListener)
@@ -40,12 +42,15 @@ runGame
      , height :: Number
      , sprites :: Array (Sprite sprite)
      , width :: Number
-     , initMousePosition :: { x :: Number, y :: Number }
+     , initMousePosition :: Complex
      }
   -> (props -> Component sprite a)
   -> props
   -> Effect Unit
-runGame { canvas, fps, height, width, sprites, initMousePosition } component props =
+runGame
+  { canvas, fps, height, width, sprites, initMousePosition }
+  component
+  props =
   do
     rendererEmitter <- newEmitter
     rayEmitter <- newEmitter
@@ -53,20 +58,21 @@ runGame { canvas, fps, height, width, sprites, initMousePosition } component pro
     keyEmitter <- newEmitter
     keyStateRef <- liftEffect $ new S.empty
     mouseStateRef <- liftEffect $ new initMousePosition
-    componentTransform <- liftEffect $ new unitComponentTransform
+    componentTransform <- liftEffect $ new unitTransform
 
     -- 初期化
-    _ <- runComponent
-      { rendererEmitter
-      , finalizeEmitter
-      , rayEmitter
-      , keyEmitter
-      , keyStateRef
-      , mouseStateRef
-      , componentTransform
-      , parentTransform: pure unitTransform
-      } $
-      component props
+    _ <-
+      runComponent
+        { rendererEmitter
+        , finalizeEmitter
+        , rayEmitter
+        , keyEmitter
+        , keyStateRef
+        , mouseStateRef
+        , componentTransform
+        , parentTransform: pure unitTransform
+        } $
+        component props
 
     -- 裏画面の生成
     subCanvas <- createCanvasElement
@@ -146,7 +152,7 @@ runGame { canvas, fps, height, width, sprites, initMousePosition } component pro
           scaleW = w / width
           x = mouseX / scaleW
           y = mouseY / scaleH
-        write { x, y } mouseStateRef
+        write (complex x y) mouseStateRef
       _ -> pure unit
     addEventListener mousemove mouseMoveHandler false win
 

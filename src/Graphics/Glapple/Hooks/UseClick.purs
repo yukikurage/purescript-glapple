@@ -22,6 +22,6 @@ useClick layer collider listener = do
   getMouseState <- useMouseState
 
   useKeyEvent \key -> do
-    { x, y } <- getMouseState
-    res <- cast x y
+    mousePos <- getMouseState
+    res <- cast mousePos
     when (res && key == KeyDown (Mouse Left)) $ listener

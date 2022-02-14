@@ -12,10 +12,10 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Ref (new)
-import Graphics.Glapple.Data.Component (Component, runComponent, unitComponentTransform)
+import Graphics.Glapple.Data.Component (Component, runComponent)
 import Graphics.Glapple.Data.Emitter (addListener_, emit, newEmitter)
+import Graphics.Glapple.Data.Transform (unitTransform)
 import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
-import Graphics.Glapple.Util (unitTransform)
 
 -- | コンポーネントを生成
 useRunner
@@ -28,7 +28,7 @@ useRunner component = do
   let
     runner props = do
       finalizeEmitter <- newEmitter
-      componentTransform <- new unitComponentTransform
+      componentTransform <- new unitTransform
       _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
         *>
           pure unit
@@ -73,7 +73,7 @@ useChildRunner component = do
   let
     runner props = do
       finalizeEmitter <- newEmitter
-      componentTransform <- new unitComponentTransform
+      componentTransform <- new unitTransform
       _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
         *>
           pure unit
