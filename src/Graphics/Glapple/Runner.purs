@@ -53,7 +53,7 @@ runGame
   props =
   do
     rendererEmitter <- newEmitter
-    rayEmitter <- newEmitter
+    hoverEmitter <- newEmitter
     finalizeEmitter <- newEmitter
     keyEmitter <- newEmitter
     keyStateRef <- liftEffect $ new S.empty
@@ -65,7 +65,7 @@ runGame
       runComponent
         { rendererEmitter
         , finalizeEmitter
-        , rayEmitter
+        , hoverEmitter
         , keyEmitter
         , keyStateRef
         , mouseStateRef
@@ -116,7 +116,7 @@ runGame
             _ -> Nothing
         case button of
           Just b -> do
-            _ <- emit keyEmitter $ KeyDown $ Mouse b
+            emit keyEmitter $ KeyDown $ Mouse b
             modify_ (S.insert $ Mouse $ b) keyStateRef
           Nothing -> pure unit
       _ -> pure unit
@@ -132,7 +132,7 @@ runGame
             _ -> Nothing
         case button of
           Just b -> do
-            _ <- emit keyEmitter $ KeyUp $ Mouse b
+            emit keyEmitter $ KeyUp $ Mouse b
             modify_ (S.delete $ Mouse b) keyStateRef
           Nothing -> pure unit
       _ -> pure unit
@@ -180,6 +180,10 @@ runGame
         liftEffect $ clearRect ctx { x: 0.0, y: 0.0, height, width }
         liftEffect $ drawImage ctx (canvasElementToImageSource subCanvas) 0.0
           0.0
+
+        -- Hover 判定
+        mousePos <- liftEffect $ read mouseStateRef
+        liftEffect $ emit hoverEmitter mousePos
 
         -- fps調整
         procEnd <- liftEffect $ getNowTime

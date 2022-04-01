@@ -28,7 +28,8 @@ type Internal sprite =
         }
         Effect
   , finalizeEmitter :: Emitter Unit Effect
-  , rayEmitter :: Emitter Complex Effect
+  , hoverEmitter ::
+      Emitter Complex Effect -- Emitter の prevent を利用してオブジェクトがホバーされているか否かを判定する
   , keyEmitter :: Emitter KeyEvent Effect
   , keyStateRef :: Ref (Set KeyCode)
   , mouseStateRef :: Ref Complex

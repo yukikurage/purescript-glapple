@@ -7,6 +7,7 @@ module Graphics.Glapple.Data.Emitter
   , emit
   , newEmitter
   , removeAllListener
+  , size
   ) where
 
 import Prelude
@@ -14,6 +15,7 @@ import Prelude
 import Control.Monad.Rec.Class (class MonadRec)
 import Control.Safely (for_)
 import Data.Map (Map, delete, empty, insert)
+import Data.Map as M
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Random (random)
@@ -76,6 +78,11 @@ emit (Emitter ref) event = do
     if isContinue then do
       listener event prevent
     else pure unit
+
+size :: forall event m. MonadEffect m => Emitter event m -> m Int
+size (Emitter ref) = liftEffect do
+  s <- read ref
+  pure $ M.size s
 
 removeAllListener
   :: forall event m

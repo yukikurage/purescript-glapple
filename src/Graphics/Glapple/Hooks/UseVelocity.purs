@@ -3,7 +3,6 @@ module Graphics.Glapple.Hooks.UseVelocity where
 import Prelude
 
 import Data.Tuple.Nested (type (/\), (/\))
-import Debug (traceM)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Graphics.Glapple.Data.Complex (Complex, (:*))

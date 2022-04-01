@@ -8,10 +8,14 @@ import Math (cos, sin)
 
 -- | コンポーネントの Transform を表す型
 -- | 適用順は Rotate -> Translate
-data Transform = Transform
+newtype Transform = Transform
   { translate :: { x :: Number, y :: Number }
   , rotate :: Number
   }
+
+derive newtype instance Eq Transform
+derive newtype instance Ord Transform
+derive newtype instance Show Transform
 
 unitTransform :: Transform
 unitTransform = Transform
@@ -23,8 +27,8 @@ toCanvasTransform
       { translate: { x: trX, y: trY }, rotate: rt }
   ) =
   { m11: cos rt
-  , m12: -sin rt
-  , m21: sin rt
+  , m12: sin rt
+  , m21: -sin rt
   , m22: cos rt
   , m31: trX
   , m32: trY
@@ -101,6 +105,7 @@ rotate (Transform { rotate: rt }) = rt
 inverseTransform :: Transform -> Transform
 inverseTransform (Transform { translate: { x: trX, y: trY }, rotate: rt }) =
   Transform
-    { translate: { x: -trX, y: -trY }
+    { translate:
+        { x: -trX * cos rt - trY * sin rt, y: trX * sin rt - trY * cos rt }
     , rotate: -rt
     }

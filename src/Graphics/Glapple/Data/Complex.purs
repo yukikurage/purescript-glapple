@@ -2,13 +2,17 @@ module Graphics.Glapple.Data.Complex where
 
 import Prelude
 
-import Math (cos, sin)
+import Math (cos, sin, sqrt)
 
 -- | 複素数型
 newtype Complex = Complex
   { real :: Number
   , image :: Number
   }
+
+derive newtype instance Eq Complex
+derive newtype instance Ord Complex
+derive newtype instance Show Complex
 
 instance Semiring Complex where
   add (Complex { real: r0, image: i0 }) (Complex { real: r1, image: i1 }) =
@@ -59,3 +63,8 @@ rotateComplex theta = Complex
 
 i :: Complex
 i = complex 0.0 1.0
+
+normalize :: Complex -> Complex
+normalize comp = complex (real comp / magnitude) (image comp / magnitude)
+  where
+  magnitude = sqrt (magnitudeSqr comp)

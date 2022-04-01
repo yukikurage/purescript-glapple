@@ -1,4 +1,4 @@
-module Graphics.Glapple.Hooks.UseRay where
+module Graphics.Glapple.Hooks.UseHover where
 
 import Prelude
 
@@ -7,37 +7,36 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Graphics.Glapple.Data.Collider (Collider(..), isCollidePosition)
-import Graphics.Glapple.Data.Complex (Complex)
 import Graphics.Glapple.Data.Component (Component)
-import Graphics.Glapple.Data.Emitter (addListener, emit)
+import Graphics.Glapple.Data.Emitter (addListener)
 import Graphics.Glapple.Hooks.UseFinalize (useFinalize)
 import Graphics.Glapple.Hooks.UseState (useState)
 import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
 
--- | useRay は，キャンバスの手前側から光線を飛ばし，光が当たったか，当たっていないかを判定．
+-- | useHover は，マウスがホバーしているかどうかを判定する．
 -- | クリック判定などに使用する．
-useRay
+-- | 第1引数(layer)が小さいほど手前にあり，優先される．
+-- | layerが同じ場合は順序は保障されない．
+useHover
   :: forall sprite
    . Number
   -> Collider
-  -> Component sprite (Complex -> Effect Boolean)
-useRay layer collider = do
+  -> Component sprite (Effect Boolean)
+useHover layer collider = do
   getTransform <- useGlobalTransform
 
-  { rayEmitter } <- ask
-  getIsCollide /\ setIsCollide <- useState false
+  { hoverEmitter } <- ask
+  getIsHover /\ setIsHover <- useState false
 
-  remover <- liftEffect $ addListener rayEmitter (-layer) $ \comp prevent ->
+  remover <- liftEffect $ addListener hoverEmitter (-layer) $ \comp prevent ->
     do
       trans <- getTransform
       if isCollidePosition comp (ColliderTransform trans collider) then do
-        setIsCollide true
+        setIsHover true
         prevent
       else do
-        setIsCollide false
+        setIsHover false
 
   useFinalize remover
 
-  pure \comp -> do
-    _ <- emit rayEmitter comp
-    getIsCollide
+  pure getIsHover

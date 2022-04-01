@@ -257,8 +257,7 @@ infixl 5 multiplyComposite as <-*
 infixl 5 addComposite as <-+
 
 transform :: forall s. Transform -> Picture s -> Picture s
-transform t = operate \ctx -> liftEffect $ setTransform ctx $ toCanvasTransform
-  t
+transform t = operate (flip C.transform $ toCanvasTransform t)
 
 translate :: forall s. Complex -> Picture s -> Picture s
 translate cmp = operate
