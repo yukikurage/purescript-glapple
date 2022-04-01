@@ -8,7 +8,6 @@ import Data.Maybe (fromMaybe)
 import Data.Number (infinity)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Graphics.Glapple.Data.Complex (Complex, complex, image, magnitudeSqr, real, (:*))
 import Graphics.Glapple.Data.Picture (Picture, Shape(..), arc, fan, rect)
 import Graphics.Glapple.Data.Picture as P
