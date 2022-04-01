@@ -30,36 +30,38 @@ let upstream = ...
 in  upstream
   with glapple =
     { dependencies =
-        [ "aff"
-        , "arrays"
-        , "canvas"
-        , "colors"
-        , "console"
-        , "datetime"
-        , "effect"
-        , "either"
-        , "foldable-traversable"
-        , "integers"
-        , "math"
-        , "maybe"
-        , "now"
-        , "ordered-collections"
-        , "prelude"
-        , "psci-support"
-        , "refs"
-        , "safely"
-        , "tailrec"
-        , "transformers"
-        , "tuples"
-        , "unsafe-coerce"
-        , "web-events"
-        , "web-html"
-        , "web-uievents"
-        ]
+      [ "aff"
+      , "arrays"
+      , "canvas"
+      , "colors"
+      , "console"
+      , "datetime"
+      , "effect"
+      , "either"
+      , "foldable-traversable"
+      , "integers"
+      , "js-date"
+      , "math"
+      , "maybe"
+      , "numbers"
+      , "ordered-collections"
+      , "prelude"
+      , "random"
+      , "refs"
+      , "safely"
+      , "tailrec"
+      , "transformers"
+      , "tuples"
+      , "unsafe-coerce"
+      , "web-dom"
+      , "web-events"
+      , "web-html"
+      , "web-uievents"
+      ]
     , repo =
         "https://github.com/yukikurage/purescript-glapple"
     , version =
-        "v1.1.0"
+        "v2.0.1"
     }
 ...
 ```
@@ -70,6 +72,5 @@ and run
 
 ## Documentation
 
-- Docs in the [`docs`](https://github.com/yukikurage/purescript-glapple/tree/master/docs) directory.
 - API reference is published on [Pursuit](https://pursuit.purescript.org/packages/purescript-glapple)
 - You can see an example that actually works in Repository [`glapple-examples`](https://github.com/yukikurage/glapple-examples).
