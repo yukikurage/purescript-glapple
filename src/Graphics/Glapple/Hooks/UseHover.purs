@@ -7,8 +7,8 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Graphics.Glapple.Data.Collider (Collider(..), isCollidePosition)
-import Graphics.Glapple.Data.Component (Component)
 import Graphics.Glapple.Data.Emitter (addListener)
+import Graphics.Glapple.Data.Hooks (Hooks)
 import Graphics.Glapple.Hooks.UseFinalize (useFinalize)
 import Graphics.Glapple.Hooks.UseState (useState)
 import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
@@ -21,7 +21,7 @@ useHover
   :: forall sprite
    . Number
   -> Collider
-  -> Component sprite (Effect Boolean)
+  -> Hooks sprite (Effect Boolean)
 useHover layer collider = do
   getTransform <- useGlobalTransform
 

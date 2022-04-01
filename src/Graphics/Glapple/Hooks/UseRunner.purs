@@ -11,16 +11,16 @@ import Control.Monad.Reader (ask)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Ref (new)
-import Graphics.Glapple.Data.Component (Component, runComponent)
 import Graphics.Glapple.Data.Emitter (addListener_, emit, newEmitter, size)
+import Graphics.Glapple.Data.Hooks (Hooks, runHooks)
 import Graphics.Glapple.Data.Transform (unitTransform)
 import Graphics.Glapple.Hooks.UseTransform (useGlobalTransform)
 
 -- | コンポーネントを生成
 useRunner
   :: forall props sprite a
-   . (props -> Component sprite a)
-  -> Component sprite
+   . (props -> Hooks sprite a)
+  -> Hooks sprite
        { run :: props -> Effect a, destroy :: Effect Unit, size :: Effect Int }
 useRunner component = do
   allFinalizeEmitter <- liftEffect newEmitter
@@ -33,7 +33,7 @@ useRunner component = do
       _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
         *>
           pure unit
-      runComponent
+      runHooks
         { rendererEmitter
         , hoverEmitter
         , finalizeEmitter
@@ -50,9 +50,9 @@ useRunner component = do
 
 useRunnerNow
   :: forall props sprite a
-   . (props -> Component sprite a)
+   . (props -> Hooks sprite a)
   -> props
-  -> Component sprite a
+  -> Hooks sprite a
 useRunnerNow component props = do
   { run } <- useRunner component
   liftEffect $ run props
@@ -61,8 +61,8 @@ useRunnerNow component props = do
 -- | 子コンポーネントのTransformは親のTransformが基準になる
 useChildRunner
   :: forall props sprite a
-   . (props -> Component sprite a)
-  -> Component sprite
+   . (props -> Hooks sprite a)
+  -> Hooks sprite
        { run :: props -> Effect a, destroy :: Effect Unit, size :: Effect Int }
 useChildRunner component = do
   allFinalizeEmitter <- liftEffect newEmitter
@@ -80,7 +80,7 @@ useChildRunner component = do
       _ <- addListener_ allFinalizeEmitter 0.0 \_ -> emit finalizeEmitter unit
         *>
           pure unit
-      runComponent
+      runHooks
         { rendererEmitter
         , hoverEmitter
         , finalizeEmitter
@@ -97,9 +97,9 @@ useChildRunner component = do
 
 useChildRunnerNow
   :: forall props sprite a
-   . (props -> Component sprite a)
+   . (props -> Hooks sprite a)
   -> props
-  -> Component sprite a
+  -> Hooks sprite a
 useChildRunnerNow component props = do
   { run } <- useChildRunner component
   liftEffect $ run props

@@ -15,8 +15,8 @@ import Effect.Class (liftEffect)
 import Effect.Ref (modify_, new, read, write)
 import Graphics.Canvas (CanvasElement, canvasElementToImageSource, clearRect, drawImage, getContext2D, setCanvasHeight, setCanvasWidth)
 import Graphics.Glapple.Data.Complex (Complex, complex)
-import Graphics.Glapple.Data.Component (Component, runComponent)
 import Graphics.Glapple.Data.Emitter (emit, newEmitter)
+import Graphics.Glapple.Data.Hooks (Hooks, runHooks)
 import Graphics.Glapple.Data.KeyEvent (KeyCode(..), KeyEvent(..), MouseButton(..))
 import Graphics.Glapple.Data.Sprite (Sprite, loadSprites)
 import Graphics.Glapple.Data.Transform (unitTransform)
@@ -44,7 +44,7 @@ runGame
      , width :: Number
      , initMousePosition :: Complex
      }
-  -> (props -> Component sprite a)
+  -> (props -> Hooks sprite a)
   -> props
   -> Effect Unit
 runGame
@@ -62,7 +62,7 @@ runGame
 
     -- 初期化
     _ <-
-      runComponent
+      runHooks
         { rendererEmitter
         , finalizeEmitter
         , hoverEmitter

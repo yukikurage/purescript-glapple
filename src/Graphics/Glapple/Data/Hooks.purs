@@ -1,7 +1,7 @@
-module Graphics.Glapple.Data.Component
-  ( Component(..)
+module Graphics.Glapple.Data.Hooks
+  ( Hooks(..)
   , Internal
-  , runComponent
+  , runHooks
   ) where
 
 import Prelude
@@ -37,23 +37,23 @@ type Internal sprite =
   , componentTransform :: Ref Transform
   }
 
-newtype Component sprite a = Component (ReaderT (Internal sprite) Effect a)
+newtype Hooks sprite a = Hooks (ReaderT (Internal sprite) Effect a)
 
-derive newtype instance Functor (Component sprite)
-derive newtype instance Apply (Component sprite)
-derive newtype instance Applicative (Component sprite)
-derive newtype instance Bind (Component sprite)
-instance Monad (Component sprite)
-derive newtype instance MonadAsk (Internal sprite) (Component sprite)
+derive newtype instance Functor (Hooks sprite)
+derive newtype instance Apply (Hooks sprite)
+derive newtype instance Applicative (Hooks sprite)
+derive newtype instance Bind (Hooks sprite)
+instance Monad (Hooks sprite)
+derive newtype instance MonadAsk (Internal sprite) (Hooks sprite)
 
-derive newtype instance MonadReader (Internal sprite) (Component sprite)
+derive newtype instance MonadReader (Internal sprite) (Hooks sprite)
 
-derive newtype instance MonadEffect (Component sprite)
-derive newtype instance MonadRec (Component sprite)
+derive newtype instance MonadEffect (Hooks sprite)
+derive newtype instance MonadRec (Hooks sprite)
 
-runComponent
+runHooks
   :: forall sprite a
    . Internal sprite
-  -> Component sprite a
+  -> Hooks sprite a
   -> Effect a
-runComponent emitter (Component m) = runReaderT m emitter
+runHooks emitter (Hooks m) = runReaderT m emitter

@@ -4,7 +4,7 @@ import Prelude
 
 import Effect (Effect)
 import Graphics.Glapple.Data.Collider (Collider)
-import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Hooks (Hooks)
 import Graphics.Glapple.Data.KeyEvent (KeyCode(..), KeyEvent(..), MouseButton(..))
 import Graphics.Glapple.Hooks.UseHover (useHover)
 import Graphics.Glapple.Hooks.UseKeyEvent (useKeyEvent)
@@ -15,7 +15,7 @@ useClick
    . Number
   -> Collider
   -> Effect Unit
-  -> Component sprite Unit
+  -> Hooks sprite Unit
 useClick layer collider listener = do
   getIsHover <- useHover layer collider
 

@@ -4,15 +4,15 @@ import Prelude
 
 import Control.Monad.Reader (ask)
 import Effect (Effect)
-import Graphics.Glapple.Data.Component (Component, runComponent)
+import Graphics.Glapple.Data.Hooks (Hooks, runHooks)
 
--- | Component sprite a の処理をモナド Effect 内で実行できるようにする
+-- | Hooks sprite a の処理をモナド Effect 内で実行できるようにする
 useLazy
   :: forall sprite a
-   . Component sprite a
-  -> Component sprite (Effect a)
+   . Hooks sprite a
+  -> Hooks sprite (Effect a)
 useLazy hooks = do
   internal <- ask
   let
-    launch = runComponent internal hooks
+    launch = runHooks internal hooks
   pure launch

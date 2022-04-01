@@ -5,7 +5,7 @@ import Prelude
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Hooks (Hooks)
 import Graphics.Glapple.Hooks.UseState (useState)
 import Graphics.Glapple.Hooks.UseUpdate (useUpdate)
 import Graphics.Glapple.Util (getNowTime)
@@ -14,7 +14,7 @@ useInterval
   :: forall sprite
    . Number
   -> Effect Unit
-  -> Component sprite Unit
+  -> Hooks sprite Unit
 useInterval time callback = do
   getPrevTime /\ setPrevTime <- useState =<< liftEffect getNowTime
   useUpdate $ \_ -> do

@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Hooks (Hooks)
 import Graphics.Glapple.Hooks.UseLocalTime (useLocalTime)
 import Graphics.Glapple.Hooks.UseState (useState)
 import Graphics.Glapple.Hooks.UseUpdate (useUpdate)
@@ -13,7 +13,7 @@ useTimeout
   :: forall sprite
    . Number
   -> Effect Unit
-  -> Component sprite Unit
+  -> Hooks sprite Unit
 useTimeout time callback = do
   getTime <- useLocalTime
   getFired /\ setFired <- useState false

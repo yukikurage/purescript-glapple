@@ -8,46 +8,46 @@ import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Ref (modify_, read)
 import Graphics.Glapple.Data.Complex (Complex)
-import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Hooks (Hooks)
 import Graphics.Glapple.Data.Transform (Transform, computeChildTransform, modifyRotate, modifyTranslate, rotate, translate)
 
 useTransform
   :: forall sprite
-   . Component sprite (Effect Transform)
+   . Hooks sprite (Effect Transform)
 useTransform = do
   { componentTransform } <- ask
   pure $ read componentTransform
 
 useTranslate
   :: forall sprite
-   . Component sprite (Effect Complex /\ (Complex -> Effect Unit))
+   . Hooks sprite (Effect Complex /\ (Complex -> Effect Unit))
 useTranslate = do
   { componentTransform } <- ask
   pure $ (translate <$> read componentTransform) /\
     (\cm -> modify_ (modifyTranslate cm) componentTransform)
 
 useTranslateNow
-  :: forall sprite. Complex -> Component sprite Unit
+  :: forall sprite. Complex -> Hooks sprite Unit
 useTranslateNow trans = do
   _ /\ setTranslate <- useTranslate
   liftEffect $ setTranslate trans
 
 useRotate
   :: forall sprite
-   . Component sprite (Effect Number /\ (Number -> Effect Unit))
+   . Hooks sprite (Effect Number /\ (Number -> Effect Unit))
 useRotate = do
   { componentTransform } <- ask
   pure $ (rotate <$> read componentTransform) /\
     (\cm -> modify_ (modifyRotate cm) componentTransform)
 
-useRotateNow :: forall sprite. Number -> Component sprite Unit
+useRotateNow :: forall sprite. Number -> Hooks sprite Unit
 useRotateNow rot = do
   _ /\ setRotate <- useRotate
   liftEffect $ setRotate rot
 
 useGlobalTransform
   :: forall sprite
-   . Component sprite (Effect Transform)
+   . Hooks sprite (Effect Transform)
 useGlobalTransform = do
   { componentTransform, parentTransform } <- ask
   pure do
@@ -56,7 +56,7 @@ useGlobalTransform = do
     pure $ computeChildTransform comTrans0 comTrans1
 
 useGlobalTranslate
-  :: forall sprite. Component sprite (Effect Complex)
+  :: forall sprite. Hooks sprite (Effect Complex)
 useGlobalTranslate = do
   getGlobalTransform <- useGlobalTransform
   pure do

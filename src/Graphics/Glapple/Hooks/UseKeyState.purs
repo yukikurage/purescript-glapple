@@ -6,10 +6,10 @@ import Control.Monad.Reader (ask)
 import Data.Set (member)
 import Effect (Effect)
 import Effect.Ref (read)
-import Graphics.Glapple.Data.Component (Component)
+import Graphics.Glapple.Data.Hooks (Hooks)
 import Graphics.Glapple.Data.KeyEvent (KeyCode)
 
-useKeyState :: forall sprite. Component sprite (KeyCode -> Effect Boolean)
+useKeyState :: forall sprite. Hooks sprite (KeyCode -> Effect Boolean)
 
 useKeyState = do
   { keyStateRef } <- ask
