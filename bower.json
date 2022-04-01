@@ -1,45 +1,61 @@
 {
-    "name": "purescript-glapple",
-    "license": [
-        "MIT"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/yukikurage/purescript-glapple"
-    },
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "output"
-    ],
-    "dependencies": {
-        "purescript-aff": "^v6.0.0",
-        "purescript-arrays": "^v6.0.1",
-        "purescript-canvas": "^v5.0.0",
-        "purescript-colors": "^v6.0.0",
-        "purescript-console": "^v5.0.0",
-        "purescript-datetime": "^v5.0.2",
-        "purescript-effect": "^v3.0.0",
-        "purescript-either": "^v5.0.0",
-        "purescript-foldable-traversable": "^v5.0.1",
-        "purescript-integers": "^v5.0.0",
-        "purescript-js-date": "^v7.0.0",
-        "purescript-math": "^v3.0.0",
-        "purescript-maybe": "^v5.0.0",
-        "purescript-numbers": "^v8.0.0",
-        "purescript-ordered-collections": "^v2.0.2",
-        "purescript-prelude": "^v5.0.1",
-        "purescript-random": "^v5.0.0",
-        "purescript-refs": "^v5.0.0",
-        "purescript-safely": "^v4.0.1",
-        "purescript-tailrec": "^v5.0.1",
-        "purescript-transformers": "^v5.2.0",
-        "purescript-tuples": "^v6.0.1",
-        "purescript-unsafe-coerce": "^v5.0.0",
-        "purescript-web-dom": "^v5.0.0",
-        "purescript-web-events": "^v3.0.0",
-        "purescript-web-html": "^v3.2.0",
-        "purescript-web-uievents": "^v3.0.0"
-    }
+  "name": "purescript-glapple",
+  "license": [
+    "MIT"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yukikurage/purescript-glapple"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-aff": "^v6.0.0",
+    "purescript-arrays": "^v6.0.1",
+    "purescript-canvas": "^v5.0.0",
+    "purescript-colors": "^v6.0.0",
+    "purescript-console": "^v5.0.0",
+    "purescript-datetime": "^v5.0.2",
+    "purescript-effect": "^v3.0.0",
+    "purescript-either": "^v5.0.0",
+    "purescript-foldable-traversable": "^v5.0.1",
+    "purescript-integers": "^v5.0.0",
+    "purescript-js-date": "^v7.0.0",
+    "purescript-math": "^v3.0.0",
+    "purescript-maybe": "^v5.0.0",
+    "purescript-numbers": "^v8.0.0",
+    "purescript-ordered-collections": "^v2.0.2",
+    "purescript-prelude": "^v5.0.1",
+    "purescript-random": "^v5.0.0",
+    "purescript-refs": "^v5.0.0",
+    "purescript-safely": "^v4.0.1",
+    "purescript-tailrec": "^v5.0.1",
+    "purescript-transformers": "^v5.2.0",
+    "purescript-tuples": "^v6.0.1",
+    "purescript-unsafe-coerce": "^v5.0.0",
+    "purescript-web-dom": "^v5.0.0",
+    "purescript-web-events": "^v3.0.0",
+    "purescript-web-html": "^v3.2.0",
+    "purescript-web-uievents": "^v3.0.0"
+  },
+  "resolutions": {
+    "purescript-arrays": "^6.0.0",
+    "purescript-aff": "^v6.0.0",
+    "purescript-datetime": "^v5.0.2",
+    "purescript-effect": "^v3.0.0",
+    "purescript-integers": "^v5.0.0",
+    "purescript-either": "^v5.0.0",
+    "purescript-foldable-traversable": "^v5.0.1",
+    "purescript-math": "^v3.0.0",
+    "purescript-maybe": "^v5.0.0",
+    "purescript-ordered-collections": "^2.0.0",
+    "purescript-prelude": "^v5.0.1",
+    "purescript-refs": "^v5.0.0",
+    "purescript-tailrec": "^v5.0.1",
+    "purescript-tuples": "^v6.0.1"
+  }
 }
