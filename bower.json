@@ -15,11 +15,11 @@
     ],
     "dependencies": {
         "purescript-aff": "^v6.0.0",
+        "purescript-aff-promise": "^v3.0.0",
         "purescript-arrays": "^v6.0.1",
         "purescript-canvas": "^v5.0.0",
         "purescript-colors": "^v6.0.0",
         "purescript-console": "^v5.0.0",
-        "purescript-datetime": "^v5.0.2",
         "purescript-effect": "^v3.0.0",
         "purescript-either": "^v5.0.0",
         "purescript-foldable-traversable": "^v5.0.1",
