@@ -31,11 +31,11 @@ in  upstream
   with glapple =
     { dependencies =
       [ "aff"
+      , "aff-promise"
       , "arrays"
       , "canvas"
       , "colors"
       , "console"
-      , "datetime"
       , "effect"
       , "either"
       , "foldable-traversable"
