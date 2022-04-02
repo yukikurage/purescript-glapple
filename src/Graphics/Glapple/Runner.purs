@@ -3,13 +3,13 @@ module Graphics.Glapple.Runner where
 import Prelude
 
 import Control.Monad.Rec.Class (forever)
+import Control.Promise (Promise, toAffE)
 import Data.Int (toNumber)
 import Data.Map (lookup)
 import Data.Maybe (Maybe(..))
 import Data.Set as S
-import Data.Time.Duration (Milliseconds(..))
 import Effect (Effect)
-import Effect.Aff (delay, launchAff_)
+import Effect.Aff (Aff, launchAff_)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
 import Effect.Ref (modify_, new, read, write)
@@ -35,11 +35,15 @@ import Web.UIEvent.KeyboardEvent.EventTypes (keydown, keyup)
 import Web.UIEvent.MouseEvent as MouseEvent
 import Web.UIEvent.MouseEvent.EventTypes (mousedown, mousemove, mouseup)
 
+foreign import requestAnimationFramePromise :: Effect (Promise Unit)
+
+requestAnimationFrameAff :: Aff Unit
+requestAnimationFrameAff = toAffE requestAnimationFramePromise
+
 runGame
   :: forall props a sprite
    . Ord sprite
   => { canvas :: CanvasElement
-     , fps :: Number
      , height :: Number
      , sprites :: Array (Sprite sprite)
      , width :: Number
@@ -49,7 +53,7 @@ runGame
   -> props
   -> Effect Unit
 runGame
-  { canvas, fps, height, width, sprites, initMousePosition }
+  { canvas, height, width, sprites, initMousePosition }
   (Component component)
   props =
   do
@@ -187,6 +191,4 @@ runGame
         liftEffect $ emit hoverEmitter mousePos
 
         -- fps調整
-        procEnd <- liftEffect $ getNowTime
-        liftAff $ delay $ Milliseconds $ max 0.0 $ 1000.0 *
-          (1.0 / fps - procEnd + procStart)
+        liftAff $ requestAnimationFrameAff
