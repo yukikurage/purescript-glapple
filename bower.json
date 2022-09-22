@@ -7,6 +7,9 @@
         "type": "git",
         "url": "https://github.com/yukikurage/purescript-glapple"
     },
+    "keywords": [
+        "pursuit-deprecated"
+    ],
     "ignore": [
         "**/.*",
         "node_modules",
